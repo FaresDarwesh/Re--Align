@@ -1,0 +1,46 @@
+{% extends "shell.html" %}
+{% from "_macros.html" import pill_status %}
+
+{% block title %}{{ t('intg.title') }}{% endblock %}
+
+{% block content %}
+<h1 class="reveal">{{ t('intg.title') }}</h1>
+<p class="muted small reveal">{{ t('intg.sub') }}</p>
+
+<div class="grid g2 reveal" style="margin-top:18px;align-items:start">
+{% for c in integrations %}
+  <div class="card hoverable">
+    <div class="row" style="justify-content:space-between;gap:12px">
+      <div class="row" style="gap:11px">
+        <div class="ic">{{ c.icon }}</div>
+        <div>
+          <h3 style="margin:0">{{ c.name_ar if lang == 'ar' else c.name }}</h3>
+          <div class="mono muted">{{ c.category }}</div>
+        </div>
+      </div>
+      {{ pill_status(c.status) }}
+    </div>
+
+    <p class="small muted" style="margin:12px 0">{{ c.description_ar if lang == 'ar' else c.description }}</p>
+
+    {% if c.capabilities %}<div class="row">{% for cap in c.capabilities %}<span class="pill">{{ cap }}</span>{% endfor %}</div>{% endif %}
+    {% if c.last_error %}<div class="pill bad" style="margin-top:9px">{{ c.last_error }}</div>{% endif %}
+
+    <div class="hr" style="margin:14px 0"></div>
+    <details {% if c.status=='connected' %}open{% endif %}>
+      <summary class="small" style="cursor:pointer">{{ t('intg.setup') }}{% if c.masked %} — <span class="mono muted">{{ c.masked.values() | join(' · ') }}</span>{% endif %}</summary>
+      <form method="post" action="/app/integrations/{{ c.key }}" style="margin-top:12px">
+        {{ csrf_field() }}
+        {% for f in c.fields %}
+          <label>{{ f }}{% if f in c.required %} *{% endif %}</label>
+          <input name="cred_{{ f }}" placeholder="{{ '••••' if c.masked.get(f) else '' }}" autocomplete="off">
+        {% endfor %}
+        {% if not c.fields %}<p class="small muted">{{ t('intg.no_creds') }}</p>{% endif %}
+        <div style="margin-top:14px"><button class="btn sm">{{ t('intg.save') }}</button></div>
+        <div class="help">{{ t('intg.encrypted') }}</div>
+      </form>
+    </details>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

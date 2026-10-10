@@ -1,0 +1,76 @@
+{% extends "shell.html" %}
+
+{% block title %}{{ t('bill.title') }}{% endblock %}
+
+{% block content %}
+<h1 class="reveal">{{ t('bill.title') }}</h1>
+<p class="muted small reveal">
+  {{ t('bill.sub') }}: <span class="mono">{{ billing_provider }}</span>.{% if billing_provider == 'none' %}{{ t('bill.sub_none') }}{% endif %}
+</p>
+
+<div class="grid g4 reveal" style="margin-top:18px">
+  <div class="card stat"><div class="kpi-lbl">{{ t('bill.current_plan') }}</div><div class="kpi" style="font-size:22px">{{ (current_plan.name_ar if lang=='ar' else current_plan.name) if current_plan else org.plan_code }}</div></div>
+  <div class="card stat"><div class="kpi-lbl">{{ t('bill.remaining') }}</div><div class="kpi">{{ '{:,}'.format(org.credits_remaining) }}</div></div>
+  <div class="card stat"><div class="kpi-lbl">{{ t('bill.used_month') }}</div><div class="kpi">{{ usage.credits_used }}</div></div>
+  <div class="card stat"><div class="kpi-lbl">{{ t('bill.ai_cost') }}</div><div class="kpi">${{ usage.cost_usd }}</div></div>
+</div>
+
+<h2 class="reveal">{{ t('bill.plans') }}</h2>
+<div class="grid g3 reveal">
+{% for p in plans %}
+  <div class="card hoverable {{ 'featured-plan' if p.code == org.plan_code }}" style="{{ 'border-color:var(--brand);border-width:2px' if p.code == org.plan_code }}">
+    <div class="row" style="justify-content:space-between">
+      <h3 style="margin:0">{{ p.name_ar if lang == 'ar' else p.name }}</h3>
+      {% if p.code == org.plan_code %}<span class="pill brand">{{ t('land.price_current') }}</span>{% endif %}
+    </div>
+    <div style="font-size:28px;font-weight:700;font-family:var(--font-display);letter-spacing:-.03em;margin:10px 0 6px">
+      {% if p.price_cents %}{{ '%.0f'|format(p.price_cents/100) }} {{ p.currency }}{% else %}{{ t('bill.custom') }}{% endif %}
+      <span style="font-size:13px;font-weight:400;color:var(--text-3);font-family:var(--font-body)">{{ t('common.per_month') }}</span>
+    </div>
+    <p class="small muted">{{ t('plan.' + p.code + '.desc') }}</p>
+    <ul class="list small">
+      <li>{{ t('bill.credits_month', credits='{:,}'.format(p.credits_monthly)) }}</li>
+      <li>{{ t('bill.seats', seats=p.seats_limit) }}</li>
+      <li>{{ t('bill.agents_limit', agents=p.agent_limit) }}</li>
+    </ul>
+    {% if p.code != org.plan_code %}
+    <form method="post" action="/app/billing/subscribe">
+      {{ csrf_field() }}
+      <input type="hidden" name="plan_code" value="{{ p.code }}">
+      <button class="btn btn-block" style="margin-top:12px">{{ t('bill.switch') }}</button>
+    </form>
+    {% endif %}
+  </div>
+{% endfor %}
+</div>
+
+<h2 class="reveal">{{ t('bill.by_agent') }}</h2>
+<div class="card reveal">
+{% if usage.by_agent %}
+<div class="table-wrap">
+<table><tr><th>{{ t('dash.agent') }}</th><th>{{ t('dash.calls') }}</th><th>{{ t('bill.ai_cost') }}</th></tr>
+{% for a in usage.by_agent %}<tr><td class="mono">{{ a.agent }}</td><td class="mono">{{ a.calls }}</td><td class="mono">{{ a.usd }}</td></tr>{% endfor %}</table>
+</div>
+{% else %}<div class="empty muted">{{ t('bill.no_usage') }}</div>{% endif %}
+</div>
+
+<h2 class="reveal">{{ t('bill.invoices') }}</h2>
+<div class="card reveal">
+{% if invoices %}
+<div class="table-wrap">
+<table>
+<tr><th>{{ t('bill.invoice_no') }}</th><th>{{ t('common.status') }}</th><th>{{ t('bill.amount') }}</th><th>{{ t('bill.issued') }}</th><th>{{ t('bill.paid') }}</th></tr>
+{% for i in invoices %}
+<tr>
+  <td class="mono">{{ i.number }}</td>
+  <td>{% if i.status == 'paid' %}<span class="pill ok">{{ i.status }}</span>{% elif i.status == 'open' %}<span class="pill warn">{{ i.status }}</span>{% else %}<span class="pill">{{ i.status }}</span>{% endif %}</td>
+  <td class="mono">{{ '%.2f'|format((i.amount_cents + i.tax_cents)/100) }} {{ i.currency }}</td>
+  <td class="mono">{{ i.issued_at.strftime('%Y-%m-%d') if i.issued_at else t('common.dash') }}</td>
+  <td class="mono">{{ i.paid_at.strftime('%Y-%m-%d') if i.paid_at else t('common.dash') }}</td>
+</tr>
+{% endfor %}
+</table>
+</div>
+{% else %}<div class="empty muted">{{ t('bill.no_invoices') }}</div>{% endif %}
+</div>
+{% endblock %}

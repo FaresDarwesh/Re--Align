@@ -1,0 +1,41 @@
+{% extends "_mk_shell.html" %}
+{% block title %}{{ t('page.pricing_title') }} — {{ app_name }}{% endblock %}
+{% block meta_desc %}{{ t('page.pricing_lead') }}{% endblock %}
+{% block content %}
+<section class="mk-page">
+  <div class="wrap">
+    <span class="eyebrow rv">{{ t('land.price_eyebrow') }}</span>
+    <h1 class="rv" style="--d:60ms;margin-top:14px">{{ t('page.pricing_title') }}</h1>
+    <p class="lead rv" style="--d:120ms">{{ t('page.pricing_lead') }}</p>
+
+    <div class="plans" style="margin-top:52px">
+      {% for p in plans %}
+      <div class="plan rv {{ 'feat' if p.code == 'growth' }}" style="--d:{{ loop.index0 * 70 }}ms">
+        <div class="plan-name"{% if p.code == 'growth' %} data-badge="{{ t('land.most_chosen') }}"{% endif %}>{{ p.name_ar if lang == 'ar' else p.name }}</div>
+        <div class="plan-desc">{{ t('plan.' + p.code + '.desc') }}</div>
+        <div class="plan-price">{{ '{:,.0f}'.format(p.price_cents / 100) }} <small>{{ t('land.per_month') }}</small></div>
+        <ul class="plan-ul">
+          <li>{{ t('plan.' + p.code + '.b1') }}</li>
+          <li>{{ t('plan.' + p.code + '.b2') }}</li>
+          <li>{{ t('plan.' + p.code + '.b3') }}</li>
+          <li>{{ '{:,}'.format(p.credits_monthly) }} {{ t('land.credits') }}</li>
+          <li>{{ p.seats_limit }} {{ t('land.seats') }}</li>
+        </ul>
+        <a class="btn {{ 'primary' if p.code == 'growth' else 'ghost' }} btn-block" href="/register?plan={{ p.code }}">{{ t('land.choose') }}</a>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="mk-small rv">{{ t('land.price_note') }}</p>
+  </div>
+</section>
+
+<section class="sec alt">
+  <div class="wrap">
+    <div class="sec-head"><h2 class="rv">{{ t('land.faq_eyebrow') }}</h2></div>
+    <div class="faq rv">
+      <details><summary>{{ t('land.faq4_q') }}</summary><div class="fa">{{ t('land.faq4_a') }}</div></details>
+      <details><summary>{{ t('land.faq5_q') }}</summary><div class="fa">{{ t('land.faq5_a') }}</div></details>
+    </div>
+  </div>
+</section>
+{% endblock %}

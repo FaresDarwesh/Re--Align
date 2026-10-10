@@ -1,0 +1,62 @@
+{% extends "_mk_shell.html" %}
+{% from "_macros.html" import logo %}
+
+{% block title %}{{ page_title }} — {{ app_name }}{% endblock %}
+{% block css %}
+<style>
+.doc-wrap{max-width:880px}
+.doc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:30px 32px}
+.doc h1{font-size:28px;margin:0 0 6px}
+.doc h2{font-size:19px;margin:30px 0 8px;padding-top:10px;border-top:1px solid var(--line)}
+.doc h2:first-of-type{border-top:0;padding-top:0}
+.doc p,.doc li{margin:8px 0}
+.doc ul{padding-inline-start:22px}
+.doc code{background:var(--surface-2);padding:1px 6px;border-radius:5px;font-size:13px;font-family:var(--font-mono)}
+.doc .table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+.doc .table th,.doc .table td{border:1px solid var(--line);padding:8px 10px;text-align:start}
+.doc .table th{background:var(--surface-2)}
+.doc-head{border-bottom:1px solid var(--line);background:var(--bg-elev)}
+.doc-head .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding-block:14px}
+</style>
+{% endblock %}
+
+{% block body %}
+<header class="doc-head">
+  <div class="wrap">
+    <a href="/" aria-label="{{ app_name }}">{{ logo("logo-sm") }}</a>
+    <div class="row" style="gap:14px;font-size:14px">
+      <a class="muted" href="/legal/privacy">{{ t('land.legal_privacy') }}</a>
+      <a class="muted" href="/legal/terms">{{ t('land.legal_terms') }}</a>
+      <a class="muted" href="/legal/cookies">{{ t('land.legal_cookies') }}</a>
+      <a class="muted" href="/legal/security">{{ t('land.legal_security') }}</a>
+      <a class="muted" href="/cookies">{{ t('land.cookie_settings') }}</a>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap doc-wrap">
+    <div class="doc reveal">
+      {{ body | safe }}
+      <div class="note" style="background:var(--info-bg);color:var(--info);border-radius:var(--radius-sm);padding:14px 16px;margin:22px 0 0;font-size:14px">
+        <b>{{ t('common.help') }}:</b> {{ t('doc.notice') }}
+      </div>
+      <div class="muted small" style="margin-top:18px">{{ t('legal.updated') }}: {{ last_updated }}</div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer" style="margin-inline-start:0">
+  <div class="wrap">
+    <div>© {{ now.strftime('%Y') }} {{ app_name }} — {{ t('doc.rights') }}</div>
+    <div class="row" style="gap:14px;font-size:13px;margin-top:8px">
+      <a href="/legal/privacy">{{ t('land.legal_privacy') }}</a>
+      <a href="/legal/terms">{{ t('land.legal_terms') }}</a>
+      <a href="/legal/cookies">{{ t('land.legal_cookies') }}</a>
+      <a href="/legal/security">{{ t('land.legal_security') }}</a>
+      <a href="/legal/acceptable-use">{{ t('land.legal_aup') }}</a>
+      <a href="mailto:{{ security_contact }}">{{ t('land.report_vuln') }}</a>
+    </div>
+  </div>
+</footer>
+{% endblock %}

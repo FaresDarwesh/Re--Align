@@ -1,0 +1,60 @@
+{% extends "shell.html" %}
+{% from "_macros.html" import icon, pill_status %}
+
+{% block title %}{{ asset.title or t('cont.title') }}{% endblock %}
+
+{% block content %}
+<a class="small muted reveal" href="/app/assets" style="display:inline-flex;align-items:center;gap:6px">
+  {{ icon("back") }} {{ t('cont.back_all') }}
+</a>
+
+<div class="row reveal" style="justify-content:space-between;align-items:flex-end;margin-top:8px;gap:12px">
+  <div>
+    <h1 style="font-size:24px">{{ asset.title or t('common.untitled') }}</h1>
+    <div class="mono muted">{{ asset.kind }} · {{ asset.channel }} · {{ asset.agent_key }}</div>
+  </div>
+  {{ pill_status(asset.status) }}
+</div>
+
+<div class="grid g3 reveal" style="margin-top:18px">
+  <div class="card stat"><div class="kpi-lbl">{{ t('cont.quality_kpi') }}</div><div class="kpi">{{ '%.2f'|format(asset.score) }}</div></div>
+  <div class="card stat"><div class="kpi-lbl">{{ t('cont.seo') }}</div><div class="kpi">{{ '%.2f'|format(asset.seo_score) }}</div></div>
+  <div class="card stat"><div class="kpi-lbl">{{ t('cont.brand_match') }}</div><div class="kpi">{{ '%.2f'|format(asset.brand_score) }}</div></div>
+</div>
+
+<h2 class="reveal">{{ t('cont.body') }}</h2>
+<div class="card reveal"><div class="code" style="max-height:none">{{ asset.body }}</div></div>
+
+<div class="grid g2 reveal" style="align-items:start">
+  <div>
+    <h2>{{ t('cont.meta') }}</h2>
+    <div class="card">
+      <div class="code">{{ asset.meta | jdump }}</div>
+      <div style="margin-top:10px">
+        <button class="btn ghost sm" type="button"
+                data-copy="{{ asset.body | e }}" data-copy-done="{{ t('common.copied') }}">
+          {{ t('common.copy') }}
+        </button>
+      </div>
+    </div>
+  </div>
+  <div>
+    <h2>{{ t('common.status') }}</h2>
+    <div class="card">
+      <ul class="list small">
+        <li>{{ t('cont.scheduled_for') }}: <span class="mono">{{ asset.scheduled_for if asset.scheduled_for else t('common.dash') }}</span></li>
+        <li>{{ t('cont.published_at') }}: <span class="mono">{{ asset.published_at if asset.published_at else t('common.dash') }}</span></li>
+        <li>{{ t('cont.external_url') }}: {% if asset.external_url %}<a href="{{ asset.external_url }}" target="_blank" rel="noopener noreferrer">{{ asset.external_url[:60] }}</a>{% else %}<span class="muted">{{ t('common.dash') }}</span>{% endif %}</li>
+        <li>{{ t('cont.external_id') }}: <span class="mono">{{ asset.external_id or t('common.dash') }}</span></li>
+        {% if asset.meta.publish_error %}<li style="color:var(--bad)">{{ t('cont.publish_error') }}: {{ asset.meta.publish_error }}</li>{% endif %}
+      </ul>
+      {% if asset.status in ['approved','failed'] %}
+      <form method="post" action="/app/assets/{{ asset.id }}/requeue" style="margin-top:12px">
+        {{ csrf_field() }}
+        <button class="btn sm">{{ t('cont.requeue') }}</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

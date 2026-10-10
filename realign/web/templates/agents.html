@@ -1,0 +1,65 @@
+{% extends "shell.html" %}
+{% from "_macros.html" import icon %}
+
+{% block title %}{{ t('nav.agents') }} · {{ org.name }}{% endblock %}
+
+{% block content %}
+<h1 class="reveal">{{ t('agents.title') }}</h1>
+<p class="muted small reveal">{{ t('agents.sub') }}</p>
+
+<div class="card reveal" style="margin:18px 0;border-color:var(--brand);background:linear-gradient(135deg, var(--brand-050), var(--surface))">
+  <div class="row" style="justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+    <div style="flex:1;min-width:240px">
+      <h3>{{ t('agents.orch_title') }}</h3>
+      <p class="small muted" style="margin:0">{{ t('agents.orch_sub') }}</p>
+    </div>
+    <form method="post" action="/app/agents/orchestrator/run" class="row" style="flex:2;min-width:280px">
+      {{ csrf_field() }}
+      <input name="goal" placeholder="{{ t('agents.orch_placeholder') }}" style="flex:1;min-width:200px">
+      <button class="btn">{{ icon("play") }} {{ t('agents.orch_cta') }}</button>
+    </form>
+  </div>
+</div>
+
+<div class="grid g3">
+{% for a in agents %}
+  <div class="card hoverable reveal" data-delay="{{ (loop.index0 % 3) * 60 }}">
+    <div class="row" style="align-items:flex-start;gap:12px">
+      <div class="ic">{{ a.icon }}</div>
+      <div style="flex:1;min-width:0">
+        <div class="mono muted">{{ a.department_ar if lang == 'ar' else a.department_en }}</div>
+        <h3 style="margin:0">{{ a.name_ar if lang == 'ar' else a.name_en }}</h3>
+      </div>
+      {% if a.enabled %}<span class="pill ok">{{ t('agents.enabled') }}</span>{% else %}<span class="pill">{{ t('agents.disabled') }}</span>{% endif %}
+    </div>
+    <p class="small muted" style="margin:12px 0">{{ a.description_ar if lang == 'ar' else a.description_en }}</p>
+    {% if a.requires_approval %}<span class="pill info">{{ t('agents.needs_approval') }}</span>{% endif %}
+    <div class="mono muted" style="margin-top:10px">{{ t('agents.stats', runs=a.total_runs, cost=a.total_cost_usd) }}</div>
+
+    <div class="hr" style="margin:14px 0"></div>
+    <form method="post" action="/app/agents/{{ a.key }}/run">
+      {{ csrf_field() }}
+      {% if a.key in ['research','content'] %}
+        <input name="topic" placeholder="{{ t('agents.topic') }}" required>
+      {% elif a.key in ['orchestrator','cio','analytics','finance'] %}
+        <input name="goal" placeholder="{{ t('agents.goal') }}">
+      {% else %}
+        <input name="topic" placeholder="{{ t('agents.topic_opt') }}">
+      {% endif %}
+      <div class="row" style="margin-top:9px">
+        <select name="channel" style="width:auto;flex:1" aria-label="{{ t('agents.channel') }}">
+          <option value="instagram">Instagram</option>
+          <option value="linkedin">LinkedIn</option>
+          <option value="x">X</option>
+          <option value="facebook">Facebook</option>
+          <option value="email">{{ t('nav.content') }} email</option>
+          <option value="telegram">Telegram</option>
+          <option value="blog">Blog</option>
+        </select>
+        <button class="btn sm">{{ icon("play") }} {{ t('agents.run') }}</button>
+      </div>
+    </form>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

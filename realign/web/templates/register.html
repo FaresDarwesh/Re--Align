@@ -1,0 +1,83 @@
+{% extends "_mk_shell.html" %}
+{% from "_macros.html" import icon, logo %}
+
+{% block title %}{{ t('auth.register_title') }} · {{ app_name }}{% endblock %}
+{% block css %}<link rel="stylesheet" href="/static/marketing.css">{% endblock %}
+
+{% block body %}
+<div class="auth-top">
+  <div class="lang">
+    <button class="lang-btn" type="button" data-lang-toggle aria-expanded="false"
+            aria-label="{{ t('common.language') }}">
+      {{ icon("globe") }}<span>{{ 'ع' if lang == 'ar' else 'EN' }}</span>{{ icon("chevron") }}
+    </button>
+    <div class="lang-menu" data-lang-menu hidden>
+      <a href="/lang/ar?next={{ request.url.path }}" class="{{ 'on' if lang == 'ar' }}">{{ icon("check", "tick") }} {{ t('common.lang_ar') }}<span class="tick">{{ icon("check") }}</span></a>
+      <a href="/lang/en?next={{ request.url.path }}" class="{{ 'on' if lang == 'en' }}">{{ icon("check", "tick") }} {{ t('common.lang_en') }}<span class="tick">{{ icon("check") }}</span></a>
+    </div>
+  </div>
+</div>
+
+<div class="auth-wrap">
+  <aside class="auth-side">
+    <div style="position:relative">
+      <a href="/" aria-label="{{ app_name }}">{{ logo() }}</a>
+      <h2 style="margin-top:34px">{{ t('land.how_title') }}</h2>
+      <p>{{ t('land.hero_sub') }}</p>
+      <div class="points">
+        <div><span class="ic">{{ icon("spark") }}</span><span>{{ t('land.stat_agents_val') }} {{ t('land.stat_agents') }}</span></div>
+        <div><span class="ic">{{ icon("grid") }}</span><span>{{ t('land.stat_depts_val') }} {{ t('land.stat_depts') }}</span></div>
+        <div><span class="ic">{{ icon("shield") }}</span><span>{{ t('land.stat_guard') }}</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="auth-main">
+    <div class="auth-card">
+      <a href="/" aria-label="{{ app_name }}">{{ logo() }}</a>
+      <h1>{{ t('auth.register_title') }}</h1>
+      <p class="sub">{{ t('auth.register_sub') }}</p>
+
+      {% if error == 'exists' %}<div class="alert bad">{{ t('auth.err.exists') }}</div>{% endif %}
+      {% if error == 'weak' %}<div class="alert bad">{{ t('common.password_weak') }}</div>{% endif %}
+      {% if error == 'invalid' %}<div class="alert bad">{{ t('common.required') }}</div>{% endif %}
+      {% if error == 'ratelimit' %}<div class="alert warn">{{ t('auth.err.locked') }}</div>{% endif %}
+      {% if error == 'csrf' %}<div class="alert warn">{{ t('auth.err.csrf') }}</div>{% endif %}
+
+      <div id="cookies-warning" class="alert warn" hidden>
+        <b>{{ t('auth.cookies_title') }}</b><br>{{ t('auth.cookies_body') }}
+      </div>
+
+      <form method="post" action="/register" autocomplete="on">
+        {{ csrf_field() }}
+        <label for="organization">{{ t('auth.org_name') }}</label>
+        <input id="organization" name="organization" required placeholder="{{ t('auth.org_name') }}" autofocus>
+
+        <label for="name">{{ t('auth.your_name') }}</label>
+        <input id="name" name="name" placeholder="{{ t('auth.name_placeholder') }}" autocomplete="name">
+
+        <label for="email">{{ t('auth.email') }}</label>
+        <input id="email" type="email" name="email" required autocomplete="email"
+               placeholder="you@company.com">
+
+        <label for="password">{{ t('auth.password') }}</label>
+        <input id="password" type="password" name="password" required minlength="10"
+               autocomplete="new-password">
+        <div class="help">{{ t('auth.password_hint') }}</div>
+
+        <div style="margin-top:22px">
+          <button class="btn btn-block lg" type="submit">{{ t('auth.create') }} {{ icon("arrow") }}</button>
+        </div>
+      </form>
+
+      <div class="auth-alt">
+        {{ t('auth.has_account') }} <a href="/login">{{ t('auth.submit') }}</a>
+      </div>
+      <div class="auth-alt" style="border:0;padding-top:10px">
+        <a href="/legal/terms">{{ t('land.legal_terms') }}</a> ·
+        <a href="/legal/privacy">{{ t('land.legal_privacy') }}</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

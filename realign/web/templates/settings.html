@@ -1,0 +1,116 @@
+{% extends "shell.html" %}
+{% from "_macros.html" import icon %}
+
+{% block title %}{{ t('set.title') }}{% endblock %}
+
+{% block content %}
+<h1 class="reveal">{{ t('set.title') }}</h1>
+{% if request.query_params.get('saved') %}<div class="flash">{{ t('set.saved') }}</div>{% endif %}
+
+<h2 class="reveal">{{ t('set.general') }}</h2>
+<form method="post" action="/app/settings/org">
+{{ csrf_field() }}
+<div class="card grid g2 reveal">
+  <div>
+    <label>{{ t('set.org_name') }}</label>
+    <input name="name" value="{{ org.name }}">
+    <label>{{ t('set.monthly_cap') }}</label>
+    <input type="number" name="monthly_budget_cents" value="{{ org.monthly_budget_cents }}">
+    <div class="help">{{ '%.2f'|format(org.monthly_budget_cents/100) }} USD</div>
+  </div>
+  <div>
+    <label>{{ t('set.per_run_cap') }}</label>
+    <input type="number" name="per_run_budget_cents" value="{{ org.per_run_budget_cents }}">
+    <label>{{ t('set.daily_limit') }}</label>
+    <input type="number" name="daily_run_limit" value="{{ org.daily_run_limit }}">
+    <div class="check-row" style="margin-top:18px">
+      <label><input type="checkbox" name="auto_publish" {{ 'checked' if org.auto_publish }}> {{ t('set.auto_publish') }}</label>
+    </div>
+    <div class="check-row" style="color:var(--bad)">
+      <label style="color:inherit"><input type="checkbox" name="kill_switch" {{ 'checked' if org.kill_switch }}> {{ t('set.kill_switch') }}</label>
+    </div>
+  </div>
+  <div style="grid-column:1/-1"><button class="btn">{{ t('common.save') }}</button></div>
+</div>
+</form>
+
+<h2 class="reveal">{{ t('set.llm') }}</h2>
+<form method="post" action="/app/settings/llm">
+{{ csrf_field() }}
+<div class="card grid g2 reveal">
+  <div>
+    <label>{{ t('set.provider') }}</label>
+    <select name="provider">
+      {% for p in ['mock','openai','anthropic','ollama','custom'] %}
+      <option value="{{ p }}" {{ 'selected' if org.llm_provider == p }}>{{ p }}</option>
+      {% endfor %}
+    </select>
+    <label>{{ t('set.base_url') }}</label>
+    <input name="base_url" value="{{ org.llm_base_url or '' }}" placeholder="https://api.openai.com/v1">
+  </div>
+  <div>
+    <label>{{ t('set.api_key') }}</label>
+    <input type="password" name="api_key" placeholder="{{ t('set.api_key_saved') if org.llm_api_key_enc else 'sk-…' }}" autocomplete="off">
+    <label>{{ t('set.thinking_model') }}</label>
+    <input name="thinking_model" value="{{ org.llm_thinking_model or '' }}">
+    <label>{{ t('set.decision_model') }}</label>
+    <input name="decision_model" value="{{ org.llm_decision_model or '' }}">
+  </div>
+  <div style="grid-column:1/-1">
+    <button class="btn">{{ t('set.save_byok') }}</button>
+    <div class="help">{{ t('set.byok_help') }}</div>
+  </div>
+</div>
+</form>
+
+<h2 class="reveal">{{ t('set.team') }}</h2>
+<div class="card reveal">
+{% if members %}
+<div class="table-wrap">
+<table>
+<tr><th>{{ t('common.name') }}</th><th>{{ t('common.email') }}</th><th>{{ t('common.role') }}</th><th>{{ t('set.last_login') }}</th></tr>
+{% for m in members %}
+<tr>
+  <td>{{ m.full_name or t('common.dash') }}</td>
+  <td class="mono">{{ m.email }}</td>
+  <td><span class="pill">{{ m.role }}</span></td>
+  <td class="mono muted">{{ m.last_login_at.strftime('%Y-%m-%d %H:%M') if m.last_login_at else t('common.dash') }}</td>
+</tr>
+{% endfor %}
+</table>
+</div>
+{% else %}<div class="empty muted">{{ t('set.no_members') }}</div>{% endif %}
+
+<div class="hr"></div>
+<form method="post" action="/app/settings/members" class="row">
+  {{ csrf_field() }}
+  <input name="full_name" placeholder="{{ t('common.name') }}" style="width:auto;flex:1;min-width:130px">
+  <input type="email" name="email" placeholder="{{ t('common.email') }}" style="width:auto;flex:1;min-width:150px" required>
+  <select name="role" style="width:auto">
+    {% for r in ['admin','manager','approver','editor','viewer'] %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+  </select>
+  <input type="password" name="password" placeholder="{{ t('auth.temp_password') }}" style="width:auto;min-width:150px" required>
+  <button class="btn">{{ icon("check") }} {{ t('set.add_member') }}</button>
+</form>
+<div class="help">{{ t('set.seats_available', seats=org.seats_limit) }}</div>
+</div>
+
+<h2 class="reveal">{{ t('set.audit') }}</h2>
+<div class="card reveal">
+{% if audit %}
+<div class="table-wrap">
+<table>
+<tr><th>{{ t('set.audit_time') }}</th><th>{{ t('set.audit_actor') }}</th><th>{{ t('set.audit_action') }}</th><th>{{ t('set.audit_message') }}</th></tr>
+{% for e in audit %}
+<tr>
+  <td class="mono muted">{{ e.created_at.strftime('%m-%d %H:%M') }}</td>
+  <td class="mono">{{ e.actor_label or e.actor_type }}</td>
+  <td class="mono">{{ e.action }}</td>
+  <td class="small">{{ e.message }}</td>
+</tr>
+{% endfor %}
+</table>
+</div>
+{% else %}<div class="empty muted">{{ t('set.no_audit') }}</div>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: realign
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-realign_dev_password}
+      POSTGRES_DB: realign
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U realign"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      APP_NAME: ${APP_NAME:-re-align}
+      APP_SECRET_KEY: ${APP_SECRET_KEY:?يجب تعيين APP_SECRET_KEY}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8000}
+      CREDENTIALS_ENCRYPTION_KEY: ${CREDENTIALS_ENCRYPTION_KEY:?يجب تعيين CREDENTIALS_ENCRYPTION_KEY}
+      DATABASE_URL: postgresql+asyncpg://realign:${POSTGRES_PASSWORD:-realign_dev_password}@db:5432/realign
+      LLM_THINKING_PROVIDER: ${LLM_THINKING_PROVIDER:-mock}
+      LLM_DECISION_PROVIDER: ${LLM_DECISION_PROVIDER:-mock}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      BILLING_PROVIDER: ${BILLING_PROVIDER:-manual}
+      BILLING_CURRENCY: ${BILLING_CURRENCY:-EGP}
+    ports:
+      - "8000:8000"
+    volumes:
+      - realign-data:/srv/re-align/data
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn realign.main:app --host 0.0.0.0 --port 8000 --workers 2"
+
+volumes:
+  pgdata:
+  realign-data:

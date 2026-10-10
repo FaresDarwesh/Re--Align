@@ -1,0 +1,44 @@
+{% extends "_mk_shell.html" %}
+{% block title %}{{ t('page.contact_title') }} — {{ app_name }}{% endblock %}
+{% block meta_desc %}{{ t('page.contact_lead') }}{% endblock %}
+{% block content %}
+<section class="mk-page">
+  <div class="wrap">
+    <div class="steps" style="grid-template-columns:1fr 1fr;align-items:start">
+      <div>
+        <span class="eyebrow rv">{{ t('land.nav_contact') }}</span>
+        <h1 class="rv" style="--d:60ms;margin-top:14px">{{ t('page.contact_title') }}</h1>
+        <p class="lead rv" style="--d:120ms">{{ t('page.contact_lead') }}</p>
+        <div class="mk-small rv" style="--d:180ms">{{ t('land.hero_note') }}</div>
+      </div>
+
+      <div class="rv" style="--d:120ms">
+        {% if sent %}<div class="alert ok">{{ t('contact.sent') }}</div>{% endif %}
+        {% if error %}<div class="alert">{{ t('contact.error') }}</div>{% endif %}
+
+        <form method="post" action="/contact" class="auth-wrap" style="grid-template-columns:1fr">
+          <div class="auth-main">
+            <div class="field">
+              <label for="c-name">{{ t('contact.name') }}</label>
+              <input id="c-name" name="name" type="text" required maxlength="120" autocomplete="name">
+            </div>
+            <div class="field">
+              <label for="c-email">{{ t('contact.email') }}</label>
+              <input id="c-email" name="email" type="email" required maxlength="200" autocomplete="email">
+            </div>
+            <div class="field">
+              <label for="c-company">{{ t('contact.company') }}</label>
+              <input id="c-company" name="company" type="text" maxlength="160" autocomplete="organization">
+            </div>
+            <div class="field">
+              <label for="c-msg">{{ t('contact.message') }}</label>
+              <textarea id="c-msg" name="message" required minlength="10" maxlength="4000"></textarea>
+            </div>
+            <button class="btn primary btn-block" type="submit">{{ t('contact.send') }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

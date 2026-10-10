@@ -1,0 +1,25 @@
+{% extends "_mk_shell.html" %}
+{% block title %}{{ t('page.faq_title') }} — {{ app_name }}{% endblock %}
+{% block meta_desc %}{{ t('page.faq_lead') }}{% endblock %}
+{% block content %}
+<section class="mk-page">
+  <div class="wrap">
+    <span class="eyebrow rv">{{ t('land.faq_eyebrow') }}</span>
+    <h1 class="rv" style="--d:60ms;margin-top:14px">{{ t('page.faq_title') }}</h1>
+    <p class="lead rv" style="--d:120ms">{{ t('page.faq_lead') }}</p>
+
+    <div class="faq rv" style="margin-top:44px">
+      {% for i in range(1, 7) %}
+      <details{% if loop.first %} open{% endif %}>
+        <summary>{{ t('land.faq' ~ i ~ '_q') }}</summary>
+        <div class="fa">{{ t('land.faq' ~ i ~ '_a') }}</div>
+      </details>
+      {% endfor %}
+    </div>
+
+    <div class="mk-small rv" style="margin-top:34px">
+      {{ t('page.contact_lead') }} <a href="/contact">{{ t('land.nav_contact') }}</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

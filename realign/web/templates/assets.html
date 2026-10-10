@@ -1,0 +1,37 @@
+{% extends "shell.html" %}
+{% from "_macros.html" import pill_status %}
+
+{% block title %}{{ t('cont.title') }}{% endblock %}
+
+{% block content %}
+<h1 class="reveal">{{ t('cont.title') }}</h1>
+<p class="muted small reveal">{{ t('cont.sub') }}</p>
+
+<div class="row reveal" style="margin:16px 0">
+  <a class="btn {{ '' if not filter_status else 'ghost' }} sm" href="/app/assets">{{ t('common.all') }}</a>
+  {% for s in ['draft','approved','scheduled','published','rejected','failed'] %}
+    <a class="btn {{ '' if filter_status == s else 'ghost' }} sm" href="/app/assets?status={{ s }}">{{ s }}</a>
+  {% endfor %}
+</div>
+
+<div class="card reveal">
+{% if assets %}
+<div class="table-wrap">
+<table>
+  <tr><th>{{ t('cont.kind') }}</th><th>{{ t('cont.title_col') }}</th><th>{{ t('cont.channel') }}</th><th>{{ t('common.status') }}</th><th>{{ t('cont.quality') }}</th><th>{{ t('cont.time') }}</th><th></th></tr>
+  {% for a in assets %}
+  <tr>
+    <td class="mono">{{ a.kind }}</td>
+    <td>{{ a.title or t('common.untitled') }}<div class="small muted">{{ (a.summary or '')[:70] }}</div></td>
+    <td class="mono">{{ a.channel }}</td>
+    <td>{{ pill_status(a.status) }}</td>
+    <td class="mono">{{ '%.2f'|format(a.score) }}</td>
+    <td class="mono muted">{{ a.created_at.strftime('%m-%d %H:%M') }}</td>
+    <td><a class="btn ghost sm" href="/app/assets/{{ a.id }}">{{ t('common.open') }}</a></td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+{% else %}<div class="empty">{{ t('cont.empty') }}</div>{% endif %}
+</div>
+{% endblock %}

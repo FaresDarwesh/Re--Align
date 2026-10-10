@@ -1,0 +1,10 @@
+# Railway picks the Dockerfile automatically; this only adds the bits the
+# dashboard can't guess: a healthcheck and a sane restart policy.
+[build]
+builder = "DOCKERFILE"
+
+[deploy]
+healthcheckPath = "/api/v1/health"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

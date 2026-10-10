@@ -1,0 +1,494 @@
+{% extends "_mk_shell.html" %}
+
+{% block title %}{{ app_name }} — {{ t('land.hero_l1') }} {{ t('land.hero_l2') }}{% endblock %}
+{% block meta_desc %}{{ t('land.hero_lead') }}{% endblock %}
+
+{# ------------------------------------------------------------- previews -- #}
+{% macro pv_agents() %}
+  <div class="pv-row">
+    <span class="pv-name"><b>◉</b>{{ t('land.pv_a1') }}</span>
+    <span class="pv-pill run">{{ t('land.pv_running') }}</span>
+    <span class="pv-meta">3 {{ t('land.pv_tasks') }}</span>
+  </div>
+  <div class="pv-row">
+    <span class="pv-name"><b>◈</b>{{ t('land.pv_a2') }}</span>
+    <span class="pv-pill ok">{{ t('land.pv_done') }}</span>
+    <span class="pv-meta">12 {{ t('land.pv_src') }}</span>
+  </div>
+  <div class="pv-row">
+    <span class="pv-name"><b>◆</b>{{ t('land.pv_a3') }}</span>
+    <span class="pv-pill wait">{{ t('land.pv_approval') }}</span>
+    <span class="pv-meta">1 {{ t('land.pv_waiting') }}</span>
+  </div>
+  <div class="pv-row">
+    <span class="pv-name"><b>▣</b>{{ t('land.pv_a4') }}</span>
+    <span class="pv-pill ok">{{ t('land.pv_done') }}</span>
+    <span class="pv-meta">8 {{ t('land.pv_items') }}</span>
+  </div>
+  <div class="pv-note">{{ t('land.pv_note') }}</div>
+{% endmacro %}
+
+{% macro pv_flows() %}
+  <div class="pv-nodes">
+    <div class="pv-node on"><b>{{ t('land.pv_n1') }}</b><span>01</span></div>
+    <div class="pv-node on"><b>{{ t('land.pv_n2') }}</b><span>02</span></div>
+    <div class="pv-node"><b>{{ t('land.pv_n3') }}</b><span>03</span></div>
+    <div class="pv-node"><b>{{ t('land.pv_n4') }}</b><span>04</span></div>
+  </div>
+  <div class="pv-row" style="margin-top:10px">
+    <span class="pv-name"><b>⇄</b>{{ t('land.pv_f1') }}</span>
+    <span class="pv-meta">2 / 4</span>
+  </div>
+  <div class="pv-row">
+    <span class="pv-name"><b>⌁</b>{{ t('land.pv_f2') }}</span>
+    <span class="pv-meta">0.8s</span>
+  </div>
+  <div class="pv-note">{{ t('land.pv_note') }}</div>
+{% endmacro %}
+
+{% macro pv_integrations() %}
+  <div class="pv-row">
+    <span class="pv-name"><b>W</b>Webhook</span>
+    <span class="pv-pill ok">{{ t('land.pv_live') }}</span>
+    <span class="pv-meta">HTTPS</span>
+  </div>
+  <div class="pv-row">
+    <span class="pv-name"><b>S</b>SMTP / {{ t('land.pv_email') }}</span>
+    <span class="pv-pill ok">{{ t('land.pv_live') }}</span>
+    <span class="pv-meta">TLS</span>
+  </div>
+  <div class="pv-row">
+    <span class="pv-name"><b>R</b>RSS</span>
+    <span class="pv-pill ok">{{ t('land.pv_live') }}</span>
+    <span class="pv-meta">15m</span>
+  </div>
+  <div class="pv-row">
+    <span class="pv-name"><b>T</b>Telegram</span>
+    <span class="pv-pill wait">{{ t('land.pv_key') }}</span>
+    <span class="pv-meta">Bot</span>
+  </div>
+  <div class="pv-note">{{ t('land.pv_note') }}</div>
+{% endmacro %}
+
+{% macro pv_tools() %}
+  <div class="pv-grid">
+    <div class="pv-stat"><b>26</b><span>{{ t('land.pv_t1') }}</span></div>
+    <div class="pv-stat"><b>9</b><span>{{ t('land.pv_t2') }}</span></div>
+    <div class="pv-stat"><b>4</b><span>{{ t('land.pv_t3') }}</span></div>
+  </div>
+  <div class="pv-row" style="margin-top:10px">
+    <span class="pv-name"><b>⛨</b>{{ t('land.pv_t4') }}</span>
+    <span class="pv-pill ok">{{ t('land.pv_enforced') }}</span>
+  </div>
+  <div class="pv-row">
+    <span class="pv-name"><b>⏱</b>{{ t('land.pv_t5') }}</span>
+    <span class="pv-pill ok">{{ t('land.pv_enforced') }}</span>
+  </div>
+  <div class="pv-note">{{ t('land.pv_note') }}</div>
+{% endmacro %}
+
+{% macro pv_analytics() %}
+  <div class="pv-grid">
+    <div class="pv-stat"><b>1,284</b><span>{{ t('land.pv_s1') }}</span></div>
+    <div class="pv-stat"><b>96%</b><span>{{ t('land.pv_s2') }}</span></div>
+    <div class="pv-stat"><b>412</b><span>{{ t('land.pv_s3') }}</span></div>
+  </div>
+  <div class="pv-chart" style="margin-top:10px" aria-hidden="true">
+    <i style="height:32%"></i><i style="height:48%"></i><i style="height:40%"></i>
+    <i class="hi" style="height:72%"></i><i style="height:58%"></i><i style="height:88%"></i>
+    <i style="height:64%"></i><i class="hi" style="height:96%"></i><i style="height:70%"></i>
+  </div>
+  <div class="pv-note">{{ t('land.pv_note') }}</div>
+{% endmacro %}
+
+{% set feature_previews = {'agents': pv_agents(), 'flows': pv_flows(), 'integrations': pv_integrations(), 'tools': pv_tools(), 'analytics': pv_analytics()} %}
+
+{% block content %}
+
+{# ============================================================ navigation #}
+<header class="mk-nav" id="mkNav">
+  <div class="wrap">
+    <a class="mk-brand" href="/" aria-label="{{ app_name }}">
+      <svg class="mk-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 13.5 L17 20 L7 26.5" />
+          <path d="M33 13.5 L23 20 L33 26.5" />
+        </g>
+        <circle cx="20" cy="20" r="2.6" fill="#7DD3FC" />
+      </svg>
+      <span>{{ app_name }}</span>
+    </a>
+
+    <nav class="mk-links" aria-label="{{ t('land.nav_aria') }}">
+      <a href="#product">{{ t('land.nav_product') }}</a>
+      <a href="#workflow">{{ t('land.nav_workflow') }}</a>
+      <a href="#how">{{ t('land.nav_how') }}</a>
+      <a href="#pricing">{{ t('land.nav_pricing') }}</a>
+      <a href="/resources">{{ t('land.nav_resources') }}</a>
+    </nav>
+
+    <div class="mk-actions">
+      <a class="btn ghost sm" href="/login">{{ t('land.nav_login') }}</a>
+      <a class="btn primary sm" href="/register">{{ t('land.nav_cta') }}</a>
+      <button class="mk-burger" type="button" id="mkBurger"
+              aria-expanded="false" aria-controls="mkMobile" aria-label="{{ t('land.nav_menu') }}">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mk-mobile" id="mkMobile">
+    <div class="wrap">
+      <a href="#product">{{ t('land.nav_product') }}</a>
+      <a href="#workflow">{{ t('land.nav_workflow') }}</a>
+      <a href="#how">{{ t('land.nav_how') }}</a>
+      <a href="#pricing">{{ t('land.nav_pricing') }}</a>
+      <a href="#security">{{ t('land.nav_security') }}</a>
+      <a href="/resources">{{ t('land.nav_resources') }}</a>
+      <a href="/faq">{{ t('land.nav_faq') }}</a>
+      <a href="/contact">{{ t('land.nav_contact') }}</a>
+      <a class="btn ghost" href="/login">{{ t('land.nav_login') }}</a>
+      <a class="btn primary" href="/register">{{ t('land.nav_cta') }}</a>
+    </div>
+  </div>
+</header>
+
+{# ================================================================== hero #}
+<section class="hero" id="hero">
+  <div class="hero-grid" aria-hidden="true"></div>
+
+  <div class="hero-light" id="heroLight" aria-hidden="true">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="rbg1" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#fff" stop-opacity="0" />
+          <stop offset="45%" stop-color="#fff" stop-opacity="1" />
+          <stop offset="100%" stop-color="#fff" stop-opacity="0" />
+        </linearGradient>
+        <linearGradient id="rbg2" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#E7E9EE" stop-opacity="0" />
+          <stop offset="50%" stop-color="#E7E9EE" stop-opacity="1" />
+          <stop offset="100%" stop-color="#E7E9EE" stop-opacity="0" />
+        </linearGradient>
+        <linearGradient id="rbg3" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#7DD3FC" stop-opacity="0" />
+          <stop offset="55%" stop-color="#7DD3FC" stop-opacity="1" />
+          <stop offset="100%" stop-color="#7DD3FC" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path class="rb rb-3" stroke="url(#rbg2)" d="M-120 640 C 320 400 640 780 1560 470" />
+      <path class="rb rb-1" stroke="url(#rbg1)" d="M-120 560 C 340 320 700 700 1560 400" />
+      <path class="rb rb-2" stroke="url(#rbg2)" d="M-120 500 C 360 250 760 640 1560 330" />
+      <path class="rb rb-4" stroke="url(#rbg3)" d="M-120 700 C 300 520 820 810 1560 560" />
+      <path class="rb rb-1" stroke="url(#rbg1)" d="M-120 430 C 380 180 820 570 1560 260" />
+    </svg>
+  </div>
+
+  <div class="hero-glow" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <div class="hero-inner">
+      <div class="hero-pill">
+        <span class="dot" aria-hidden="true"></span>
+        {{ t('land.hero_pill') }}
+      </div>
+
+      <h1>
+        <span class="ln" style="--d:80ms"><span>{{ t('land.hero_l1') }}</span></span>
+        <span class="ln" style="--d:200ms"><span><em>{{ t('land.hero_l2') }}</em></span></span>
+        <span class="ln" style="--d:320ms"><span>{{ t('land.hero_l3') }}</span></span>
+      </h1>
+
+      <p class="hero-lead" data-hero="lead">{{ t('land.hero_lead') }}</p>
+
+      <div class="hero-cta" data-hero="cta">
+        <a class="btn primary lg" href="/register">{{ t('land.hero_cta') }}</a>
+        <a class="btn ghost lg" href="/contact">{{ t('land.hero_cta2') }}</a>
+      </div>
+
+      <p class="hero-note" data-hero="note">{{ t('land.hero_note') }}</p>
+    </div>
+  </div>
+</section>
+
+{# ============================================================ trust strip #}
+<section class="trust" aria-label="{{ t('land.trust_title') }}">
+  <div class="wrap">
+    <div class="trust-head">
+      <span class="eyebrow rv">{{ t('land.trust_eyebrow') }}</span>
+      <strong class="rv" style="--d:60ms">{{ t('land.trust_title') }}</strong>
+    </div>
+    <div class="trust-row">
+      {% for c in channels %}
+      <span class="trust-item rv {{ 'ready' if c.ready }}" style="--d:{{ loop.index0 * 55 }}ms">
+        <i aria-hidden="true"></i>{{ c.label }}
+        <span class="tag">{{ t('land.trust_ready') if c.ready else t('land.trust_pending') }}</span>
+      </span>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ======================================================== feature showcase #}
+<section class="sec" id="product">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">{{ t('land.showcase_eyebrow') }}</span>
+      <h2 class="rv" style="--d:60ms">{{ t('land.showcase_title') }}</h2>
+      <p class="rv" style="--d:120ms">{{ t('land.showcase_lead') }}</p>
+    </div>
+
+    {% set feats = [
+      ('agents',       'land.sc1', '/product'),
+      ('flows',        'land.sc2', '/product#flows'),
+      ('integrations', 'land.sc3', '/product#integrations'),
+      ('tools',        'land.sc4', '/product#tools'),
+      ('analytics',    'land.sc5', '/app/analytics')
+    ] %}
+
+    <div class="showcase">
+      <div class="sc-nav rv" role="tablist" aria-orientation="vertical"
+           aria-label="{{ t('land.showcase_title') }}">
+        {% for key, base, href in feats %}
+        <button class="sc-tab" type="button" role="tab"
+                id="scTab{{ loop.index0 }}"
+                aria-controls="scPanel"
+                aria-selected="{{ 'true' if loop.first else 'false' }}"
+                tabindex="{{ '0' if loop.first else '-1' }}"
+                data-feature="{{ loop.index0 }}">
+          <span class="n">0{{ loop.index }}</span>
+          <span>{{ t(base + '_tab') }}</span>
+        </button>
+        {% endfor %}
+      </div>
+
+      <div class="sc-panel rv" id="scPanel" role="tabpanel"
+           aria-labelledby="scTab0" tabindex="0">
+        {% for key, base, href in feats %}
+        <div class="sc-copy" data-feature-panel="{{ loop.index0 }}" {% if not loop.first %}hidden{% endif %}>
+          <h3>{{ t(base + '_title') }}</h3>
+          <p>{{ t(base + '_desc') }}</p>
+          <div class="sc-facts">
+            <span>{{ t(base + '_f1') }}</span>
+            <span>{{ t(base + '_f2') }}</span>
+            <span>{{ t(base + '_f3') }}</span>
+          </div>
+          <a class="btn ghost sm" href="{{ href }}">{{ t('land.sc_cta') }}</a>
+
+          <div class="preview">
+            <div class="pv-bar">
+              <i></i><i></i><i></i>
+              <span class="pv-title">{{ t(base + '_pv') }}</span>
+            </div>
+            <div class="pv-body">{{ feature_previews[key] }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ========================================================== workflow demo #}
+<section class="sec alt" id="workflow">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">{{ t('land.flow_eyebrow') }}</span>
+      <h2 class="rv" style="--d:60ms">{{ t('land.flow_title') }}</h2>
+      <p class="rv" style="--d:120ms">{{ t('land.flow_lead') }}</p>
+    </div>
+
+    <div class="flow rv" id="flowRoot">
+      <div class="flow-head">
+        <b>{{ t('land.flow_demo') }}</b>
+        <span class="flow-badge">{{ t('land.flow_sample') }}</span>
+      </div>
+
+      <div class="flow-track" id="flowTrack">
+        <div class="flow-node active" data-stage="0">
+          <span class="bulb">01</span>
+          <b>{{ t('land.flow_s1') }}</b>
+          <span>{{ t('land.flow_s1d') }}</span>
+        </div>
+        <div class="flow-node" data-stage="1">
+          <span class="bulb">02</span>
+          <b>{{ t('land.flow_s2') }}</b>
+          <span>{{ t('land.flow_s2d') }}</span>
+        </div>
+        <div class="flow-node" data-stage="2">
+          <span class="bulb">03</span>
+          <b>{{ t('land.flow_s3') }}</b>
+          <span>{{ t('land.flow_s3d') }}</span>
+        </div>
+        <div class="flow-node" data-stage="3">
+          <span class="bulb">04</span>
+          <b>{{ t('land.flow_s4') }}</b>
+          <span>{{ t('land.flow_s4d') }}</span>
+        </div>
+      </div>
+
+      <div class="flow-panels">
+        <div class="flow-card float-a" id="fcExec">
+          <h4>{{ t('land.flow_exec_title') }}</h4>
+          <div class="fc-line"><span class="k">{{ t('land.flow_k1') }}</span><span class="v">{{ t('land.flow_v1') }}</span></div>
+          <div class="fc-bar d1" style="--w:100%"><i></i></div>
+          <div class="fc-line" style="margin-top:14px"><span class="k">{{ t('land.flow_k2') }}</span><span class="v">{{ t('land.flow_v2') }}</span></div>
+          <div class="fc-bar d2" style="--w:82%"><i></i></div>
+          <div class="fc-line" style="margin-top:14px"><span class="k"><span class="dot-run" aria-hidden="true"></span>{{ t('land.flow_k3') }}</span><span class="v">{{ t('land.flow_v3') }}</span></div>
+          <div class="fc-bar d3" style="--w:54%"><i></i></div>
+        </div>
+
+        <div class="flow-card float-b">
+          <h4>{{ t('land.flow_res_title') }}</h4>
+          <div class="fc-line"><span class="k">{{ t('land.flow_r1') }}</span><span class="v">{{ t('land.flow_r1v') }}</span></div>
+          <div class="fc-line"><span class="k">{{ t('land.flow_r2') }}</span><span class="v">{{ t('land.flow_r2v') }}</span></div>
+          <div class="fc-line"><span class="k">{{ t('land.flow_r3') }}</span><span class="v">{{ t('land.flow_r3v') }}</span></div>
+          <div class="fc-line"><span class="k">{{ t('land.flow_r4') }}</span><span class="v">{{ t('land.flow_r4v') }}</span></div>
+          <div class="fc-line"><span class="k">{{ t('land.flow_r5') }}</span><span class="v">{{ t('land.flow_r5v') }}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ================================================================= benefits #}
+<section class="sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">{{ t('land.ben_eyebrow') }}</span>
+      <h2 class="rv" style="--d:60ms">{{ t('land.ben_title') }}</h2>
+    </div>
+
+    <div class="benefits">
+      {% for i in range(1, 7) %}
+      <div class="benefit rv" style="--d:{{ loop.index0 * 70 }}ms">
+        <span class="bn">0{{ i }}</span>
+        <h3>{{ t('land.ben' ~ i ~ '_t') }}</h3>
+        <p>{{ t('land.ben' ~ i ~ '_d') }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ============================================================ how it works #}
+<section class="sec alt" id="how">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">{{ t('land.hiw_eyebrow') }}</span>
+      <h2 class="rv" style="--d:60ms">{{ t('land.hiw_title') }}</h2>
+      <p class="rv" style="--d:120ms">{{ t('land.hiw_lead') }}</p>
+    </div>
+
+    <div class="steps">
+      {% for i in range(1, 4) %}
+      <div class="step rv" style="--d:{{ loop.index0 * 90 }}ms">
+        <span class="sn">0{{ i }}</span>
+        <h3>{{ t('land.hiw' ~ i ~ '_t') }}</h3>
+        <p>{{ t('land.hiw' ~ i ~ '_d') }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# =========================================================== integrations #}
+<section class="sec" id="integrations">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">{{ t('land.intg_eyebrow') }}</span>
+      <h2 class="rv" style="--d:60ms">{{ t('land.intg_title') }}</h2>
+      <p class="rv" style="--d:120ms">{{ t('land.intg_lead') }}</p>
+    </div>
+
+    <div class="intg">
+      {% for c in integrations %}
+      <div class="intg-item rv" style="--d:{{ (loop.index0 % 4) * 60 }}ms">
+        <i aria-hidden="true">{{ c.icon }}</i>
+        <b>{{ c.name }}</b>
+        <span class="st {{ 'live' if c.ready }}">{{ t('land.intg_ready') if c.ready else t('land.intg_key') }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ================================================================ security #}
+<section class="sec alt" id="security">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">{{ t('land.sec_eyebrow') }}</span>
+      <h2 class="rv" style="--d:60ms">{{ t('land.sec_title') }}</h2>
+      <p class="rv" style="--d:120ms">{{ t('land.sec_lead') }}</p>
+    </div>
+
+    <div class="sec-grid">
+      {% for i in range(1, 9) %}
+      <div class="sec-item rv" style="--d:{{ (loop.index0 % 4) * 60 }}ms">
+        <b>{{ t('land.sec' ~ i ~ '_t') }}</b>
+        <span>{{ t('land.sec' ~ i ~ '_d') }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ================================================================== pricing #}
+<section class="sec" id="pricing">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">{{ t('land.price_eyebrow') }}</span>
+      <h2 class="rv" style="--d:60ms">{{ t('land.price_title') }}</h2>
+      <p class="rv" style="--d:120ms">{{ t('land.price_sub') }}</p>
+    </div>
+
+    <div class="plans">
+      {% for p in plans %}
+      <div class="plan rv {{ 'feat' if p.code == 'growth' }}" style="--d:{{ loop.index0 * 70 }}ms">
+        <div class="plan-name"{% if p.code == 'growth' %} data-badge="{{ t('land.most_chosen') }}"{% endif %}>{{ p.name_ar if lang == 'ar' else p.name }}</div>
+        <div class="plan-desc">{{ t('plan.' + p.code + '.desc') }}</div>
+        <div class="plan-price">{{ '{:,.0f}'.format(p.price_cents / 100) }} <small>{{ t('land.per_month') }}</small></div>
+        <ul class="plan-ul">
+          <li>{{ t('plan.' + p.code + '.b1') }}</li>
+          <li>{{ t('plan.' + p.code + '.b2') }}</li>
+          <li>{{ t('plan.' + p.code + '.b3') }}</li>
+        </ul>
+        <a class="btn {{ 'primary' if p.code == 'growth' else 'ghost' }} btn-block" href="/register?plan={{ p.code }}">{{ t('land.choose') }}</a>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="mk-small rv">{{ t('land.price_note') }}</p>
+  </div>
+</section>
+
+{# ===================================================================== faq #}
+<section class="sec alt" id="faq">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">{{ t('land.faq_eyebrow') }}</span>
+      <h2 class="rv" style="--d:60ms">{{ t('land.faq_title') }}</h2>
+    </div>
+
+    <div class="faq rv">
+      {% for i in range(1, 7) %}
+      <details{% if loop.first %} open{% endif %}>
+        <summary>{{ t('land.faq' ~ i ~ '_q') }}</summary>
+        <div class="fa">{{ t('land.faq' ~ i ~ '_a') }}</div>
+      </details>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ============================================================== final cta #}
+<section class="final">
+  <div class="wrap">
+    <div class="final-inner">
+      <h2 class="rv">{{ t('land.final_title') }}</h2>
+      <p class="rv" style="--d:80ms">{{ t('land.final_lead') }}</p>
+      <a class="btn primary lg rv" style="--d:160ms" href="/register">{{ t('land.final_cta') }}</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

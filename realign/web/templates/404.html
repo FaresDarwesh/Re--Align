@@ -1,0 +1,18 @@
+{% extends "_mk_shell.html" %}
+{% block title %}{{ t('page.notfound_title') }} — {{ app_name }}{% endblock %}
+{% block meta_desc %}{{ t('page.notfound_lead') }}{% endblock %}
+{% block content %}
+<section class="mk-page" style="text-align:center">
+  <div class="wrap">
+    <div class="final-inner" style="margin-inline:auto">
+      <span class="eyebrow rv">404</span>
+      <h1 class="rv" style="--d:60ms;margin-top:14px">{{ t('page.notfound_title') }}</h1>
+      <p class="lead rv" style="--d:120ms;margin-inline:auto">{{ t('page.notfound_lead') }}</p>
+      <div class="hero-cta rv" style="--d:200ms;justify-content:center">
+        <a class="btn primary lg" href="/">{{ t('page.back_home') }}</a>
+        <a class="btn ghost lg" href="/contact">{{ t('land.nav_contact') }}</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

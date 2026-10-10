@@ -1,0 +1,26 @@
+[Unit]
+Description=re-align — AI Agent Operating System
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=realign
+Group=realign
+WorkingDirectory=/opt/re-align
+EnvironmentFile=/opt/re-align/.env
+Environment=PATH=/opt/re-align/.venv/bin
+ExecStart=/opt/re-align/.venv/bin/uvicorn realign.main:app \
+    --host 0.0.0.0 --port 8000 --workers 2 \
+    --proxy-headers --forwarded-allow-ips=*
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/realign/realign.log
+StandardError=append:/var/log/realign/realign.log
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/re-align/data /var/log/realign
+
+[Install]
+WantedBy=multi-user.target

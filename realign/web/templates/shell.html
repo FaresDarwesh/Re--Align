@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, logo %}
+
+{% block body %}
+<div class="shell">
+
+  {# ------------------------------------------------------------ sidebar -- #}
+  <aside class="sidebar closed" id="sidebar">
+    <div class="sb-head">
+      <a href="/app" aria-label="{{ app_name }}">{{ logo("logo-sm") }}</a>
+    </div>
+
+    <nav class="sb-nav" aria-label="{{ t('nav.menu') }}">
+      <a href="/app" class="sb-link {{ 'on' if request.url.path == '/app' }}">
+        {{ icon("grid") }}<span>{{ t('nav.dashboard') }}</span>
+      </a>
+      <a href="/app/agents" class="sb-link {{ 'on' if request.url.path.startswith('/app/agents') }}">
+        {{ icon("agents") }}<span>{{ t('nav.agents') }}</span>
+      </a>
+      <a href="/app/approvals" class="sb-link {{ 'on' if request.url.path.startswith('/app/approvals') }}">
+        {{ icon("approvals") }}<span>{{ t('nav.approvals') }}</span>
+        {% if pending_approvals %}<span class="badge">{{ pending_approvals }}</span>{% endif %}
+      </a>
+      <a href="/app/assets" class="sb-link {{ 'on' if request.url.path.startswith('/app/assets') }}">
+        {{ icon("content") }}<span>{{ t('nav.content') }}</span>
+      </a>
+      <a href="/app/runs" class="sb-link {{ 'on' if request.url.path.startswith('/app/runs') }}">
+        {{ icon("runs") }}<span>{{ t('nav.runs') }}</span>
+      </a>
+      <a href="/app/integrations" class="sb-link {{ 'on' if request.url.path.startswith('/app/integrations') }}">
+        {{ icon("integrations") }}<span>{{ t('nav.integrations') }}</span>
+      </a>
+      <a href="/app/brand" class="sb-link {{ 'on' if request.url.path.startswith('/app/brand') }}">
+        {{ icon("brand") }}<span>{{ t('nav.brand') }}</span>
+      </a>
+      <a href="/app/billing" class="sb-link {{ 'on' if request.url.path.startswith('/app/billing') }}">
+        {{ icon("billing") }}<span>{{ t('nav.billing') }}</span>
+      </a>
+      <a href="/app/settings" class="sb-link {{ 'on' if request.url.path.startswith('/app/settings') }}">
+        {{ icon("settings") }}<span>{{ t('nav.settings') }}</span>
+      </a>
+      {% if user.is_platform_admin %}
+      <div class="sb-sep"></div>
+      <a href="/app/admin" class="sb-link {{ 'on' if request.url.path.startswith('/app/admin') }}">
+        {{ icon("admin") }}<span>{{ t('nav.admin') }}</span>
+      </a>
+      {% endif %}
+    </nav>
+
+    <div class="sb-foot">
+      <a class="sb-user" href="/app/settings">
+        <span class="avatar">{{ (user.full_name or user.email)[:1] }}</span>
+        <span class="who">
+          <b>{{ user.full_name or user.email.split('@')[0] }}</b>
+          <span>{{ user.email }}</span>
+        </span>
+        {{ icon("logout") }}
+      </a>
+    </div>
+  </aside>
+  <div class="scrim" aria-hidden="true"></div>
+
+  {# ------------------------------------------------------------- content - #}
+  <div class="main-col">
+    <header class="topbar">
+      <button class="icon-btn sb-toggle" type="button" data-nav-toggle
+              aria-label="{{ t('nav.menu') }}">{{ icon("menu") }}</button>
+      <button class="icon-btn" type="button" data-back="{{ crumbs[-2].url if crumbs|length > 1 else '/app' }}"
+              aria-label="{{ t('common.back') }}" title="{{ t('common.back') }}">{{ icon("back") }}</button>
+
+      <nav class="crumbs" aria-label="{{ t('common.back') }}">
+        {% for c in crumbs %}
+          {% if not loop.first %}<span class="sep">/</span>{% endif %}
+          {% if loop.last %}<span class="cur">{{ c.label }}</span>
+          {% else %}<a href="{{ c.url }}">{{ c.label }}</a>{% endif %}
+        {% endfor %}
+      </nav>
+
+      <div class="top-actions">
+        {# language #}
+        <div class="lang">
+          <button class="lang-btn" type="button" data-lang-toggle aria-expanded="false"
+                  aria-label="{{ t('common.language') }}">
+            {{ icon("globe") }}<span>{{ 'العربية' if lang == 'ar' else 'English' }}</span>{{ icon("chevron") }}
+          </button>
+          <div class="lang-menu" data-lang-menu hidden>
+            <a href="/lang/ar?next={{ request.url.path }}" class="{{ 'on' if lang == 'ar' }}">
+              {{ icon("check", "tick") }} {{ t('common.lang_ar') }}<span class="tick">{{ icon("check") }}</span>
+            </a>
+            <a href="/lang/en?next={{ request.url.path }}" class="{{ 'on' if lang == 'en' }}">
+              {{ icon("check", "tick") }} {{ t('common.lang_en') }}<span class="tick">{{ icon("check") }}</span>
+            </a>
+          </div>
+        </div>
+
+        <a class="icon-btn" href="/logout" title="{{ t('nav.logout') }}"
+           aria-label="{{ t('nav.logout') }}">{{ icon("logout") }}</a>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="wrap">
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap row" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <span>{{ app_name }} — {{ tagline() }}</span>
+        <span class="mono muted">{{ t('misc.version') }} 1.0.0 · {% if now %}{{ now.strftime('%Y-%m-%d') }}{% endif %}</span>
+      </div>
+      <div class="wrap row" style="gap:14px;flex-wrap:wrap;font-size:13px;padding-top:6px">
+        <a href="/legal/privacy">{{ t('land.legal_privacy') }}</a>
+        <a href="/legal/terms">{{ t('land.legal_terms') }}</a>
+        <a href="/legal/cookies">{{ t('land.legal_cookies') }}</a>
+        <a href="/legal/security">{{ t('land.legal_security') }}</a>
+        <a href="/legal/acceptable-use">{{ t('land.legal_aup') }}</a>
+        <a href="/legal/dpa">{{ t('land.legal_dpa') }}</a>
+        <a href="/cookies" class="muted">{{ t('land.cookie_settings') }}</a>
+        <span class="muted">·</span>
+        <a href="mailto:{{ security_contact }}">{{ t('land.report_vuln') }}</a>
+      </div>
+    </footer>
+  </div>
+</div>
+{% endblock %}

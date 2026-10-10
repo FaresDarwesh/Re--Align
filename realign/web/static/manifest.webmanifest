@@ -1,0 +1,19 @@
+{
+  "name": "re-align",
+  "short_name": "re-align",
+  "description": "نظام تشغيل الوكلاء الأذكياء للشركات — re-align",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FCFCFA",
+  "theme_color": "#FCFCFA",
+  "icons": [
+    { "src": "/static/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "/static/favicon.png", "sizes": "64x64", "type": "image/png", "purpose": "any" },
+    { "src": "/static/favicon-32.png", "sizes": "32x32", "type": "image/png", "purpose": "any" },
+    { "src": "/static/logo-mark.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/static/logo-mark.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

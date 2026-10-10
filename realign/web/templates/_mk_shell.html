@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{#
+  Shell for every public (unauthenticated) page: the landing, auth screens,
+  the simple content pages and the legal pages. It swaps the app stylesheet
+  for the cinematic marketing one and appends the shared footer.
+#}
+
+{% block body_class %}mk{% endblock %}
+
+{% block base_css %}
+<link rel="stylesheet" href="/static/marketing.css">
+{% endblock %}
+
+{% block body %}
+{% block content %}{% endblock %}
+
+<footer class="mk-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="mk-brand" href="/" aria-label="{{ app_name }}">
+          <svg class="mk-mark" viewBox="0 0 40 40" aria-hidden="true">
+            <g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 13.5 L17 20 L7 26.5" />
+              <path d="M33 13.5 L23 20 L33 26.5" />
+            </g>
+            <circle cx="20" cy="20" r="2.6" fill="#7DD3FC" />
+          </svg>
+          <span>{{ app_name }}</span>
+        </a>
+        <p>{{ t('foot.tagline') }}</p>
+      </div>
+
+      <div class="foot-col">
+        <b>{{ t('foot.product') }}</b>
+        <a href="/product">{{ t('land.nav_product') }}</a>
+        <a href="/#workflow">{{ t('land.nav_workflow') }}</a>
+        <a href="/#integrations">{{ t('land.nav_integrations') }}</a>
+        <a href="/pricing">{{ t('land.nav_pricing') }}</a>
+        <a href="/#security">{{ t('land.nav_security') }}</a>
+      </div>
+
+      <div class="foot-col">
+        <b>{{ t('foot.company') }}</b>
+        <a href="/resources">{{ t('land.nav_resources') }}</a>
+        <a href="/faq">{{ t('land.nav_faq') }}</a>
+        <a href="/contact">{{ t('land.nav_contact') }}</a>
+        <a href="/login">{{ t('land.nav_login') }}</a>
+        <a href="/register">{{ t('land.nav_cta') }}</a>
+      </div>
+
+      <div class="foot-col">
+        <b>{{ t('foot.legal') }}</b>
+        <a href="/legal/privacy">{{ t('land.legal_privacy') }}</a>
+        <a href="/legal/terms">{{ t('land.legal_terms') }}</a>
+        <a href="/legal/cookies">{{ t('land.legal_cookies') }}</a>
+        <a href="/legal/security">{{ t('land.nav_security') }}</a>
+        <a href="/legal/dpa">{{ t('land.legal_dpa') }}</a>
+        <a href="/cookies">{{ t('land.cookie_settings') }}</a>
+      </div>
+    </div>
+
+    <div class="foot-base">
+      <span>© {{ now.year if now else 2026 }} {{ app_name }}. {{ t('foot.rights') }}</span>
+      <span class="lang">
+        <a href="/lang/ar" class="{{ 'on' if lang == 'ar' }}">العربية</a>
+        <a href="/lang/en" class="{{ 'on' if lang == 'en' }}">English</a>
+      </span>
+    </div>
+  </div>
+</footer>
+{% endblock %}

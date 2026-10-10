@@ -1,0 +1,146 @@
+{% extends "shell.html" %}
+{% from "_macros.html" import icon, pill_status %}
+
+{% block title %}{{ t('nav.dashboard') }} · {{ org.name }}{% endblock %}
+
+{% block content %}
+<div class="row reveal" style="justify-content:space-between;align-items:flex-end;gap:14px">
+  <div>
+    <h1>{{ org.name }}</h1>
+    <div class="mono muted">{{ org.slug }} · {{ t('dash.plan_label', plan=(plan.name_ar if lang=='ar' else plan.name) if plan else org.plan_code) }} · {{ org.status }}</div>
+  </div>
+  <div class="row">
+    {% if org.kill_switch %}<span class="pill bad">{{ t('dash.killswitch') }}</span>{% endif %}
+    {% if llm.provider == 'mock' %}<span class="pill warn">{{ t('dash.mock_provider') }}</span>{% endif %}
+    <a class="btn" href="/app/agents">{{ icon("play") }} {{ t('dash.run_agent') }}</a>
+  </div>
+</div>
+
+<div class="grid g4" style="margin-top:22px">
+  <a class="card hoverable stat reveal" href="/app/approvals">
+    <div class="kpi-lbl">{{ t('dash.pending') }}</div>
+    <div class="kpi">{{ pending_approvals }}</div>
+    <div class="small" style="color:var(--brand-600);margin-top:6px">{{ t('dash.open_queue') }} {{ icon("arrow") }}</div>
+  </a>
+  <div class="card hoverable stat reveal" data-delay="60">
+    <div class="kpi-lbl">{{ t('dash.credits') }}</div>
+    <div class="kpi">{{ '{:,}'.format(org.credits_remaining) }}</div>
+    <div class="bar"><span style="width:{{ (100 - (org.credits_used / (org.credits_monthly or 1) * 100)) | round | int }}%"></span></div>
+    <div class="help">{{ t('dash.used_of', used='{:,}'.format(org.credits_used), total='{:,}'.format(org.credits_monthly)) }}</div>
+  </div>
+  <div class="card hoverable stat reveal" data-delay="120">
+    <div class="kpi-lbl">{{ t('dash.cost') }}</div>
+    <div class="kpi">${{ total_cost_usd }}</div>
+    <div class="help">{{ t('dash.operations', count=usage.records) }}</div>
+  </div>
+  <div class="card hoverable stat reveal" data-delay="180">
+    <div class="kpi-lbl">{{ t('dash.runs') }}</div>
+    <div class="kpi">{{ (run_counts.values() | sum) or 0 }}</div>
+    <div class="help">{{ t('dash.ok_failed', ok=run_counts.get('succeeded',0), failed=run_counts.get('failed',0)) }}</div>
+  </div>
+</div>
+
+<div class="grid g2" style="margin-top:26px;align-items:start">
+  <div class="stack">
+    <div class="card reveal">
+      <div class="row" style="justify-content:space-between">
+        <h3>{{ t('dash.recent_runs') }}</h3>
+        <a class="small muted" href="/app/runs">{{ t('common.more') }}</a>
+      </div>
+      {% if runs %}
+      <div class="table-wrap" style="margin-top:10px">
+        <table>
+          <tr><th>{{ t('dash.agent') }}</th><th>{{ t('common.status') }}</th><th>{{ t('dash.duration') }}</th><th>{{ t('dash.cost_col') }}</th><th></th></tr>
+          {% for r in runs %}
+          <tr>
+            <td><b>{{ r.agent_key }}</b><div class="mono muted">{{ r.trigger }}</div></td>
+            <td>{{ pill_status(r.status) }}</td>
+            <td class="mono">{{ r.duration_ms }} ms</td>
+            <td class="mono">${{ '%.4f'|format(r.cost_micros/1000000) }}</td>
+            <td><a class="btn ghost sm" href="/app/runs/{{ r.id }}">{{ t('common.open') }}</a></td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+      {% else %}
+      <div class="empty" style="margin-top:12px">{{ t('dash.no_runs') }}</div>
+      {% endif %}
+    </div>
+
+    <div class="card reveal" data-delay="80">
+      <h3>{{ t('dash.top_usage') }}</h3>
+      {% if usage.by_agent %}
+      <div class="table-wrap" style="margin-top:10px">
+        <table>
+          <tr><th>{{ t('dash.agent') }}</th><th>{{ t('dash.calls') }}</th><th>{{ t('dash.cost_col') }}</th></tr>
+          {% for a in usage.by_agent %}
+          <tr><td class="mono">{{ a.agent }}</td><td class="mono">{{ a.calls }}</td><td class="mono">${{ a.usd }}</td></tr>
+          {% endfor %}
+        </table>
+      </div>
+      {% else %}
+      <div class="empty" style="margin-top:12px">{{ t('dash.no_usage') }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="stack">
+    <div class="card reveal" data-delay="40">
+      <div class="row" style="justify-content:space-between">
+        <h3>{{ t('dash.queue') }}</h3>
+        <a class="small muted" href="/app/approvals">{{ t('dash.open_queue') }}</a>
+      </div>
+      {% if approvals %}
+      <ul class="list" style="margin-top:8px">
+      {% for a in approvals %}
+        <li>
+          <div class="row" style="justify-content:space-between;align-items:flex-start">
+            <b style="flex:1;min-width:0">{{ a.title }}</b>
+            {{ pill_status(a.kind) }}
+          </div>
+          <div class="small muted">{{ a.body[:120] }}…</div>
+          <div class="row" style="margin-top:8px">
+            <form method="post" action="/app/approvals/{{ a.id }}/decide">
+              {{ csrf_field() }}
+              <input type="hidden" name="decision" value="approve">
+              <button class="btn sm ok">{{ t('appr.approve') }}</button>
+            </form>
+            <form method="post" action="/app/approvals/{{ a.id }}/decide">
+              {{ csrf_field() }}
+              <input type="hidden" name="decision" value="reject">
+              <button class="btn sm danger">{{ t('appr.reject') }}</button>
+            </form>
+            <a class="btn ghost sm" href="/app/approvals">{{ t('common.details') }}</a>
+          </div>
+        </li>
+      {% endfor %}
+      </ul>
+      {% else %}
+      <div class="empty" style="margin-top:12px">{{ t('dash.no_approvals') }}</div>
+      {% endif %}
+    </div>
+
+    <div class="card reveal" data-delay="120">
+      <div class="row" style="justify-content:space-between">
+        <h3>{{ t('dash.latest_content') }}</h3>
+        <a class="small muted" href="/app/assets">{{ t('common.more') }}</a>
+      </div>
+      {% if assets %}
+      <ul class="list" style="margin-top:8px">
+      {% for a in assets %}
+        <li>
+          <div class="row" style="justify-content:space-between">
+            <a href="/app/assets/{{ a.id }}" style="flex:1;min-width:0"><b>{{ a.title or t('common.untitled') }}</b></a>
+            {{ pill_status(a.status) }}
+          </div>
+          <div class="mono muted">{{ a.kind }} · {{ a.channel }} · {{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+        </li>
+      {% endfor %}
+      </ul>
+      {% else %}
+      <div class="empty" style="margin-top:12px">{{ t('dash.no_content') }}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

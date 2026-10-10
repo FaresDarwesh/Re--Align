@@ -1,0 +1,64 @@
+{% extends "shell.html" %}
+
+{% block title %}{{ t('brand.title') }}{% endblock %}
+
+{% block content %}
+<h1 class="reveal">{{ t('brand.title') }}</h1>
+<p class="muted small reveal">{{ t('brand.sub') }}</p>
+
+{% if request.query_params.get('saved') %}<div class="flash">{{ t('brand.saved') }}</div>{% endif %}
+
+<form method="post" action="/app/brand">
+{{ csrf_field() }}
+<div class="grid g2 reveal" style="margin-top:18px;align-items:start">
+
+  <div class="card">
+    <h3>{{ t('brand.basics') }}</h3>
+    <label>{{ t('brand.company_name') }}</label>
+    <input name="company_name" value="{{ brand.company_name if brand else org.name }}">
+    <label>{{ t('brand.industry') }}</label>
+    <input name="industry" value="{{ brand.industry if brand else '' }}" placeholder="{{ t('brand.industry_ph') }}">
+    <label>{{ t('brand.audience') }}</label>
+    <textarea name="audience" placeholder="{{ t('brand.audience_ph') }}">{{ brand.audience if brand else '' }}</textarea>
+    <label>{{ t('brand.offer') }}</label>
+    <textarea name="offer" placeholder="{{ t('brand.offer_ph') }}">{{ brand.offer if brand else '' }}</textarea>
+  </div>
+
+  <div class="card">
+    <h3>{{ t('brand.voice_rules') }}</h3>
+    <label>{{ t('brand.voice') }}</label>
+    <textarea name="voice" placeholder="{{ t('brand.voice_ph') }}">{{ brand.voice if brand else '' }}</textarea>
+    <label>{{ t('brand.rules') }}</label>
+    <textarea name="rules" placeholder="{{ t('brand.rules_ph') }}">{{ brand.rules if brand else '' }}</textarea>
+    <label>{{ t('brand.never_say') }}</label>
+    <textarea name="never_say" placeholder="{{ t('brand.never_say_ph') }}">{{ brand.never_say if brand else '' }}</textarea>
+  </div>
+
+  <div class="card">
+    <h3>{{ t('brand.words') }}</h3>
+    <label>{{ t('brand.keywords') }}</label>
+    <input name="keywords" value="{{ (brand.keywords | join(', ')) if brand else '' }}">
+    <label>{{ t('brand.tone_keywords') }}</label>
+    <input name="tone_keywords" value="{{ (brand.tone_keywords | join(', ')) if brand else '' }}">
+    <label>{{ t('brand.hashtags') }}</label>
+    <input name="hashtags" value="{{ (brand.hashtags | join(', ')) if brand else '' }}">
+    <label>{{ t('brand.competitors') }}</label>
+    <input name="competitors" value="{{ (brand.competitors | join(', ')) if brand else '' }}">
+    <label>{{ t('brand.locales') }}</label>
+    <input name="locales" value="{{ (brand.locales | join(', ')) if brand else 'ar' }}">
+  </div>
+
+  <div class="card">
+    <h3>{{ t('brand.samples') }}</h3>
+    <label>{{ t('brand.sample_posts') }}</label>
+    <textarea name="sample_posts" style="min-height:200px" placeholder="{{ t('brand.sample_posts_ph') }}">{{ (brand.sample_posts | join('\n')) if brand and brand.sample_posts else '' }}</textarea>
+    <div class="help">{{ t('brand.samples_help') }}</div>
+  </div>
+</div>
+
+<div class="row reveal" style="margin-top:20px">
+  <button class="btn lg">{{ t('brand.save') }}</button>
+  <a class="btn ghost" href="/app/brand">{{ t('common.refresh') }}</a>
+</div>
+</form>
+{% endblock %}

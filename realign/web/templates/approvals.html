@@ -1,0 +1,61 @@
+{% extends "shell.html" %}
+{% from "_macros.html" import icon %}
+
+{% block title %}{{ t('appr.title') }}{% endblock %}
+
+{% block content %}
+<h1 class="reveal">{{ t('appr.title') }}</h1>
+<p class="muted small reveal">{{ t('appr.sub') }}</p>
+
+<div class="stack" style="margin-top:18px">
+{% if approvals %}
+{% for a in approvals %}
+<div class="card hoverable reveal" data-delay="{{ (loop.index0 % 5) * 50 }}">
+  <div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px">
+    <div style="flex:1;min-width:0">
+      <div class="mono muted">{{ a.agent_key }} · {{ a.kind }} · {{ a.channel or t('common.dash') }} · {{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+      <h3 style="margin:4px 0 10px">{{ a.title }}</h3>
+    </div>
+    <span class="pill {{ 'bad' if a.risk_score > 0.6 else ('warn' if a.risk_score > 0.3 else 'ok') }}">
+      {{ t('appr.risk', score='%.2f'|format(a.risk_score)) }}
+    </span>
+  </div>
+
+  <div class="code" style="max-height:260px">{{ a.body }}</div>
+
+  {% if a.risk_flags %}
+  <div class="row" style="margin-top:10px">
+    {% for f in a.risk_flags %}<span class="pill warn">{{ f }}</span>{% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="hr" style="margin:14px 0"></div>
+  <div class="row">
+    <form method="post" action="/app/approvals/{{ a.id }}/decide">
+      {{ csrf_field() }}
+      <input type="hidden" name="decision" value="approve">
+      <button class="btn ok">
+        {{ t('appr.approve_publish') if a.kind=='publish' else (t('appr.approve_send') if a.kind=='send' else t('appr.approve')) }}
+      </button>
+    </form>
+    <form method="post" action="/app/approvals/{{ a.id }}/decide" class="row" style="flex:1;min-width:260px">
+      {{ csrf_field() }}
+      <input type="hidden" name="decision" value="changes_requested">
+      <input name="note" placeholder="{{ t('appr.changes_ph') }}" style="flex:1;min-width:150px;width:auto">
+      <button class="btn ghost">{{ t('appr.changes') }}</button>
+    </form>
+    <form method="post" action="/app/approvals/{{ a.id }}/decide">
+      {{ csrf_field() }}
+      <input type="hidden" name="decision" value="reject">
+      <button class="btn danger">{{ t('appr.reject') }}</button>
+    </form>
+    {% if a.asset_id %}<a class="btn ghost sm" href="/app/assets/{{ a.asset_id }}">{{ t('appr.asset') }}</a>{% endif %}
+    {% if a.run_id %}<a class="btn ghost sm" href="/app/runs/{{ a.run_id }}">{{ t('appr.run') }}</a>{% endif %}
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty reveal">{{ t('appr.empty') }}</div>
+{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "_mk_shell.html" %}
+
+{% block title %}{{ t('page.product_title') }} — {{ app_name }}{% endblock %}
+{% block meta_desc %}{{ t('page.product_lead') }}{% endblock %}
+
+{% block content %}
+<section class="mk-page">
+  <div class="wrap">
+    <span class="eyebrow rv">{{ t('land.showcase_eyebrow') }}</span>
+    <h1 class="rv" style="--d:60ms;margin-top:14px">{{ t('page.product_title') }}</h1>
+    <p class="lead rv" style="--d:120ms">{{ t('page.product_lead') }}</p>
+
+    <div class="sec-grid rv" style="--d:200ms;margin-top:44px">
+      <div class="sec-item"><b>{{ t('land.sc1_f1') }}</b><span>{{ t('land.sc1_f2') }} · {{ t('land.sc1_f3') }}</span></div>
+      <div class="sec-item"><b>{{ t('land.sc4_f1') }}</b><span>{{ t('land.sc4_f3') }}</span></div>
+      <div class="sec-item"><b>{{ t('land.sc3_f1') }}</b><span>{{ t('land.sc3_f2') }}</span></div>
+      <div class="sec-item"><b>{{ t('land.sc5_f2') }}</b><span>{{ t('land.sc5_f3') }}</span></div>
+    </div>
+  </div>
+</section>
+
+{# ---------------------------------------------------------------- agents - #}
+<section class="sec alt" id="agents">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">{{ t('land.sc1_tab') }}</span>
+      <h2 class="rv" style="--d:60ms">{{ t('land.sc1_title') }}</h2>
+      <p class="rv" style="--d:120ms">{{ t('land.sc1_desc') }}</p>
+    </div>
+
+    {% for dept, items in departments.items() %}
+    <div class="rp-dept rv" style="--d:{{ loop.index0 * 60 }}ms">
+      <div class="rp-dept-head">
+        <h3>{{ items[0].department_ar if lang == 'ar' else items[0].department_en }}</h3>
+        <span class="rp-count">{{ items|length }}</span>
+      </div>
+      <div class="rp-agents">
+        {% for a in items %}
+        <div class="rp-agent">
+          <span class="rp-icon" aria-hidden="true">{{ a.icon }}</span>
+          <div>
+            <b>{{ a.name_ar if lang == 'ar' else a.name_en }}</b>
+            <p>{{ a.description_ar if lang == 'ar' else a.description_en }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{# ----------------------------------------------------------------- flows - #}
+<section class="sec" id="flows">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">{{ t('land.sc2_tab') }}</span>
+      <h2 class="rv" style="--d:60ms">{{ t('land.sc2_title') }}</h2>
+      <p class="rv" style="--d:120ms">{{ t('land.sc2_desc') }}</p>
+    </div>
+
+    <div class="flow">
+      <div class="flow-head">
+        <b>{{ t('land.flow_demo') }}</b>
+        <span class="flow-badge">{{ t('land.flow_sample') }}</span>
+      </div>
+      <div class="flow-track">
+        <div class="flow-node active"><span class="bulb">01</span><b>{{ t('land.flow_s1') }}</b><span>{{ t('land.flow_s1d') }}</span></div>
+        <div class="flow-node"><span class="bulb">02</span><b>{{ t('land.flow_s2') }}</b><span>{{ t('land.flow_s2d') }}</span></div>
+        <div class="flow-node"><span class="bulb">03</span><b>{{ t('land.flow_s3') }}</b><span>{{ t('land.flow_s3d') }}</span></div>
+        <div class="flow-node"><span class="bulb">04</span><b>{{ t('land.flow_s4') }}</b><span>{{ t('land.flow_s4d') }}</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ---------------------------------------------------------- integrations - #}
+<section class="sec alt" id="integrations">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">{{ t('land.sc3_tab') }}</span>
+      <h2 class="rv" style="--d:60ms">{{ t('land.sc3_title') }}</h2>
+      <p class="rv" style="--d:120ms">{{ t('land.sc3_desc') }}</p>
+    </div>
+
+    <div class="intg">
+      {% for c in integrations %}
+      <div class="intg-item rv" style="--d:{{ (loop.index0 % 4) * 55 }}ms">
+        <i aria-hidden="true">{{ c.icon }}</i>
+        <b>{{ c.name }}</b>
+        <span class="st {{ 'live' if c.ready }}">{{ t('land.intg_ready') if c.ready else t('land.intg_key') }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ------------------------------------------------------------------ tools - #}
+<section class="sec" id="tools">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">{{ t('land.sc4_tab') }}</span>
+      <h2 class="rv" style="--d:60ms">{{ t('land.sc4_title') }}</h2>
+      <p class="rv" style="--d:120ms">{{ t('land.sc4_desc') }}</p>
+    </div>
+
+    <div class="benefits">
+      <div class="benefit rv"><span class="bn">01</span><h3>{{ t('land.pv_t4') }}</h3><p>{{ t('land.sec1_d') }}</p></div>
+      <div class="benefit rv" style="--d:70ms"><span class="bn">02</span><h3>{{ t('land.sec4_t') }}</h3><p>{{ t('land.sec4_d') }}</p></div>
+      <div class="benefit rv" style="--d:140ms"><span class="bn">03</span><h3>{{ t('land.sec7_t') }}</h3><p>{{ t('land.sec7_d') }}</p></div>
+      <div class="benefit rv"><span class="bn">04</span><h3>{{ t('land.pv_t5') }}</h3><p>{{ t('land.sc4_f2') }}</p></div>
+      <div class="benefit rv" style="--d:70ms"><span class="bn">05</span><h3>{{ t('land.sec5_t') }}</h3><p>{{ t('land.sec5_d') }}</p></div>
+      <div class="benefit rv" style="--d:140ms"><span class="bn">06</span><h3>{{ t('land.sec8_t') }}</h3><p>{{ t('land.sec8_d') }}</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <div class="final-inner">
+      <h2 class="rv">{{ t('land.final_title') }}</h2>
+      <p class="rv" style="--d:80ms">{{ t('land.final_lead') }}</p>
+      <a class="btn primary lg rv" style="--d:160ms" href="/register">{{ t('land.final_cta') }}</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

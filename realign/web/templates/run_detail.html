@@ -1,0 +1,67 @@
+{% extends "shell.html" %}
+{% from "_macros.html" import icon, pill_status %}
+
+{% block title %}{{ t('runs.title') }} {{ run.id[:8] }}{% endblock %}
+
+{% block content %}
+<a class="small muted reveal" href="/app/runs" style="display:inline-flex;align-items:center;gap:6px">
+  {{ icon("back") }} {{ t('runs.back_all') }}
+</a>
+
+<div class="row reveal" style="justify-content:space-between;align-items:flex-end;margin-top:8px;gap:12px">
+  <div>
+    <h1>{{ run.agent_key }}</h1>
+    <div class="mono muted">{{ run.id }} · {{ run.trigger }} · {{ run.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+  </div>
+  {{ pill_status(run.status) }}
+</div>
+
+<div class="grid g4 reveal" style="margin-top:18px">
+  <div class="card stat"><div class="kpi-lbl">{{ t('runs.duration') }}</div><div class="kpi">{{ run.duration_ms }}<span style="font-size:14px"> ms</span></div></div>
+  <div class="card stat"><div class="kpi-lbl">{{ t('runs.tokens') }}</div><div class="kpi">{{ run.tokens_in + run.tokens_out }}</div></div>
+  <div class="card stat"><div class="kpi-lbl">{{ t('runs.cost') }}</div><div class="kpi">${{ '%.4f'|format(run.cost_micros/1000000) }}</div></div>
+  <div class="card stat"><div class="kpi-lbl">{{ t('runs.credits') }}</div><div class="kpi">{{ run.credits }}</div></div>
+</div>
+
+{% if summary %}
+<div class="card reveal" style="margin-top:18px"><h3>{{ t('runs.result') }}</h3><p style="margin:0">{{ summary }}</p></div>
+{% endif %}
+
+{% if run.error %}
+<div class="card reveal" style="margin-top:18px;border-color:var(--bad)">
+  <h3 style="color:var(--bad)">{{ t('runs.error') }}</h3>
+  <div class="code">{{ run.error }}</div>
+  {% if output.traceback %}
+  <details style="margin-top:10px"><summary class="small muted">{{ t('runs.tech') }}</summary>
+    <div class="code">{{ output.traceback }}</div></details>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="grid g2 reveal" style="margin-top:18px;align-items:start">
+  <div>
+    <h2>{{ t('runs.steps') }}</h2>
+    <div class="card">
+      {% if steps %}<ul class="list">
+        {% for s in steps %}<li><span class="mono muted">{{ s.get('name') }}</span> — {{ s.get('detail','') }}</li>{% endfor %}
+      </ul>{% else %}<div class="empty muted">{{ t('runs.no_steps') }}</div>{% endif %}
+    </div>
+  </div>
+  <div>
+    <h2>{{ t('runs.metrics') }}</h2>
+    <div class="card"><div class="code">{{ metrics | jdump(0) }}</div></div>
+  </div>
+</div>
+
+{% if output.data %}
+<h2 class="reveal">{{ t('runs.outputs') }}</h2>
+<div class="card reveal"><div class="code">{% if output.data is string %}{{ output.data }}{% else %}{{ output.data | jdump }}{% endif %}</div></div>
+{% endif %}
+
+{% if output.assets %}
+<h2 class="reveal">{{ t('runs.produced') }}</h2>
+<div class="row reveal">
+  {% for aid in output.assets %}<a class="btn ghost sm" href="/app/assets/{{ aid }}">{{ aid[:8] }}</a>{% endfor %}
+</div>
+{% endif %}
+{% endblock %}

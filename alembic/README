@@ -1,0 +1,8 @@
+Alembic migrations.
+
+  alembic revision --autogenerate -m "message"
+  alembic upgrade head
+  alembic downgrade -1
+
+First boot: `init_db()` creates every table, so migrations are only required
+once you are running a live database with real data.

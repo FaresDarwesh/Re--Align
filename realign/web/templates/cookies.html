@@ -1,0 +1,68 @@
+{% extends "_mk_shell.html" %}
+{% from "_macros.html" import logo %}
+
+{% block title %}{{ t('cookies.title') }} — {{ app_name }}{% endblock %}
+{% block css %}
+<style>
+.doc-wrap{max-width:760px}
+.doc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:28px 30px}
+.doc h1{font-size:25px;margin:0 0 6px}
+.doc h2{font-size:17px;margin:24px 0 6px}
+.doc code{background:var(--surface-2);padding:1px 6px;border-radius:5px;font-size:12.5px;font-family:var(--font-mono)}
+.doc table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:8px 10px;text-align:start}
+.doc th{background:var(--surface-2)}
+.doc-head{border-bottom:1px solid var(--line);background:var(--bg-elev)}
+.doc-head .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:14px}
+</style>
+{% endblock %}
+
+{% block body %}
+<header class="doc-head">
+  <div class="wrap">
+    <a href="/" aria-label="{{ app_name }}">{{ logo("logo-sm") }}</a>
+    <a class="muted small" href="/legal/cookies">{{ t('doc.read_cookie_policy') }}</a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap doc-wrap">
+    <div class="doc reveal">
+      {% if request.query_params.get('saved') %}<div class="flash">{{ t('cookies.saved') }}</div>{% endif %}
+      <h1>{{ t('cookies.title') }}</h1>
+      <p class="muted small">{{ t('cookies.change_anytime') }}</p>
+
+      <h2>{{ t('cookies.essential') }}</h2>
+      <table>
+        <thead><tr><th>{{ t('cookies.cookie') }}</th><th>{{ t('cookies.purpose') }}</th><th>{{ t('cookies.duration') }}</th></tr></thead>
+        <tbody>
+          <tr><td><code>realign_session</code></td><td>{{ t('cookies.login') }}</td><td>{{ t('cookies.session') }}</td></tr>
+          <tr><td><code>realign_csrf</code></td><td>{{ t('cookies.csrf_purpose') }}</td><td>{{ t('cookies.hours4') }}</td></tr>
+          <tr><td><code>realign_lang</code></td><td>{{ t('common.language') }}</td><td>{{ t('cookies.months6') }}</td></tr>
+          <tr><td><code>ra_cookie_consent</code></td><td>{{ t('cookies.consent_purpose') }}</td><td>{{ t('cookies.months6') }}</td></tr>
+        </tbody>
+      </table>
+
+      <h2>{{ t('cookies.optional') }}</h2>
+      <p class="muted small">{{ t('cookies.optional_body') }}</p>
+
+      <form method="post" action="/cookies" style="margin-top:18px">
+        {{ csrf_field() }}
+        <div class="row">
+          <button class="btn" type="submit" name="choice" value="accept">{{ t('cookies.accept') }}</button>
+          <button class="btn ghost" type="submit" name="choice" value="reject">{{ t('cookies.essential_only') }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+
+<footer class="footer" style="margin-inline-start:0">
+  <div class="wrap row" style="gap:14px;font-size:13px">
+    <a href="/legal/privacy">{{ t('land.legal_privacy') }}</a>
+    <a href="/legal/terms">{{ t('land.legal_terms') }}</a>
+    <a href="/legal/cookies">{{ t('land.legal_cookies') }}</a>
+    <a href="/legal/security">{{ t('land.legal_security') }}</a>
+  </div>
+</footer>
+{% endblock %}
