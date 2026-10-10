@@ -27,7 +27,7 @@ from realign.core.headers import (
 )
 from realign.core.logging import get_logger, setup_logging
 from realign.core.ratelimit import client_ip, limiter
-from realign.db import close_db, init_db
+from realign.db import SessionLocal, close_db, init_db
 
 log = get_logger("realign.main")
 
@@ -75,44 +75,41 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     from realign.services.onboarding import seed_plans
 
+    stage = "database_init"
     try:
-        await init_db()
-    except Exception as exc:  # noqa: BLE001 - translate cryptic DB errors
-        msg = str(exc)
-        if "password authentication failed" in msg:
-            log.error(
-                "db_auth_failed",
-                hint="كلمة السر في DATABASE_URL مش صحيحة (غالباً رمز خاص قصّ "
-                     "السترينج). الحل المضمون: امسح DATABASE_URL وحط بدلها "
-                     "PGHOST وPGUSER وPGPASSWORD وPGDATABASE كمتغيرات منفصلة "
-                     "— الكود بيركّب الـ URL بنفسه بتشفير صح. التفاصيل في "
-                     "docs/RAILWAY.md فقرة ٩٫٥.",
-            )
-        elif "ssl" in msg.lower() or "certificate" in msg.lower():
-            log.error("db_tls_problem", hint="تحقق إن الـ URL فيه sslmode=require")
-        elif "Connection refused" in msg or "name or service not known" in msg:
-            log.error("db_unreachable", hint="راجع الهوست والبورت في DATABASE_URL")
+        try:
+            await init_db()
+        except Exception as exc:  # noqa: BLE001 - translate cryptic DB errors
+            _hint_db_failure(exc)
+            raise
+
+        stage = "plan_seeding"
+        async with SessionLocal() as session:
+            created = await seed_plans(session)
+            if created:
+                log.info("plans_seeded", count=created)
+
+        stage = "admin_bootstrap"
+        await _bootstrap_owner()
+
+        # On hosts where no background asyncio task can survive, runs are
+        # executed inline (see `realign.agents.engine.enqueue_run`) and the
+        # scheduler is replaced by an HTTP-triggered cron endpoint.
+        stage = "worker_init"
+        if settings.serverless:
+            log.info("serverless_mode", worker="inline", scheduler="cron endpoint /api/v1/cron/tick")
+        else:
+            from realign.workers.queue import worker
+            from realign.workers.scheduler import scheduler
+
+            worker.start()
+            scheduler.start()
+    except Exception as exc:
+        # Structured breadcrumb for the deploy log: which stage died and with
+        # which exception class — never the DB URL, passwords or keys. The
+        # full traceback stays in the server log and the failure propagates.
+        log.exception("startup_failed", stage=stage, error_class=type(exc).__name__)
         raise
-    from realign.db import SessionLocal
-
-    async with SessionLocal() as session:
-        created = await seed_plans(session)
-        if created:
-            log.info("plans_seeded", count=created)
-
-    await _bootstrap_owner()
-
-    # On hosts where no background asyncio task can survive, runs are
-    # executed inline (see `realign.agents.engine.enqueue_run`) and the
-    # scheduler is replaced by an HTTP-triggered cron endpoint.
-    if settings.serverless:
-        log.info("serverless_mode", worker="inline", scheduler="cron endpoint /api/v1/cron/tick")
-    else:
-        from realign.workers.queue import worker
-        from realign.workers.scheduler import scheduler
-
-        worker.start()
-        scheduler.start()
 
     yield
 
@@ -121,6 +118,24 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await worker.stop()
     await close_db()
     log.info("shutdown_complete")
+
+
+def _hint_db_failure(exc: Exception) -> None:
+    """Translate cryptic DB errors into one actionable hint (no secrets)."""
+    msg = str(exc)
+    if "password authentication failed" in msg:
+        log.error(
+            "db_auth_failed",
+            hint="كلمة السر في DATABASE_URL مش صحيحة (غالباً رمز خاص قصّ "
+                 "السترينج). الحل المضمون: امسح DATABASE_URL وحط بدلها "
+                 "PGHOST وPGUSER وPGPASSWORD وPGDATABASE كمتغيرات منفصلة "
+                 "— الكود بيركّب الـ URL بنفسه بتشفير صح. التفاصيل في "
+                 "docs/RAILWAY.md فقرة ٩٫٥.",
+        )
+    elif "ssl" in msg.lower() or "certificate" in msg.lower():
+        log.error("db_tls_problem", hint="تحقق إن الـ URL فيه sslmode=require")
+    elif "Connection refused" in msg or "name or service not known" in msg:
+        log.error("db_unreachable", hint="راجع الهوست والبورت في DATABASE_URL")
 
 
 async def _bootstrap_owner() -> None:

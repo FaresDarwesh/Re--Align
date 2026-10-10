@@ -125,12 +125,21 @@ async def init_db(*, create_extensions: bool = True) -> None:
     zero-friction path for dev/tests and first boot."""
     from realign import models  # noqa: F401  (register every mapper)
 
+    # Optional extension, isolated in its own transaction on purpose: on
+    # managed Postgres (Neon) a non-superuser role can hit "permission
+    # denied" here, which ABORTS the surrounding transaction — anything else
+    # sharing that connection would then fail with InFailedSqlTransaction.
+    # The app runs fine without pgcrypto (PG13+ ships gen_random_uuid
+    # natively), so a failure is a warning, never a boot blocker. Genuine
+    # connection failures surface again — loudly — in create_all below.
+    if not settings.is_sqlite and create_extensions:
+        try:
+            async with engine.begin() as ext_conn:
+                await ext_conn.execute(text('CREATE EXTENSION IF NOT EXISTS "pgcrypto"'))
+        except Exception as exc:  # noqa: BLE001 - optional; never block boot
+            log.warning("pgcrypto_extension_skipped", error_class=type(exc).__name__)
+
     async with engine.begin() as conn:
-        if not settings.is_sqlite and create_extensions:
-            try:
-                await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "pgcrypto"'))
-            except Exception:  # noqa: BLE001 - extension may be unavailable
-                log.debug("pgcrypto_unavailable")
         await conn.run_sync(Base.metadata.create_all)
         await conn.run_sync(_add_missing_columns)
     log.info("database_ready", url=settings.database_url.split("://")[0])
