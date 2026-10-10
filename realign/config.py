@@ -238,16 +238,25 @@ class Settings(BaseSettings):
 
     @pydantic.model_validator(mode="after")
     def _compose_pg_url(self) -> "Settings":
-        if not (self.pghost or "").strip():
+        if not (self.pghost or "").strip().strip("\"'").strip():
             return self
-        user = quote((self.pguser or "neondb_owner").strip(), safe="")
+
+        def _clean(v: str) -> str:
+            # Consoles/docs often get copy-pasted *with* surrounding quotes
+            # (e.g. PGHOST="ep-….neon.tech"). Literal quotes inside a DNS
+            # name make it unresolvable — and on AWS Lambda an unresolvable
+            # host surfaces as the cryptic OSError EBUSY, not a DNS error.
+            return (v or "").strip().strip("\"'").strip()
+
+        user = quote(_clean(self.pguser) or "neondb_owner", safe="")
         # Tolerate a password pasted straight out of a connection string
         # (percent-encoded) as well as a raw one: normalise then encode.
-        raw = unquote(self.pgpassword or "")
+        # Quotes are stripped, but whitespace inside the password is kept.
+        raw = unquote((self.pgpassword or "").strip().strip("\"'"))
         pwd = quote(raw, safe="")
         self.database_url = (
             f"postgresql+asyncpg://{user}:{pwd}"
-            f"@{self.pghost.strip()}:{self.pgport}/{self.pgdatabase.strip()}"
+            f"@{_clean(self.pghost)}:{self.pgport}/{_clean(self.pgdatabase) or 'neondb'}"
             "?sslmode=require"
         )
         return self

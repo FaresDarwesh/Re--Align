@@ -5,7 +5,10 @@
 
 # --- Web / API -------------------------------------------------------------
 fastapi==0.143.0
-uvicorn[standard]==0.38.0
+# Plain uvicorn on purpose (no [standard] extras): uvloop/httptools are
+# unused by the app, and the stdlib asyncio loop is the proven path on
+# Vercel's serverless runtime. Railway runs this fine too.
+uvicorn==0.38.0
 pillow==12.3.0          # image re-encoding on upload (strips embedded payloads)
 python-multipart==0.0.32
 email-validator==2.3.0

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+import errno as _errno
 import ssl as _sslmod
 from collections.abc import AsyncGenerator
 from typing import Any
@@ -81,7 +83,20 @@ def _engine_kwargs() -> dict[str, Any]:
             }
         )
     else:
-        kwargs.update({"pool_size": settings.db_pool_size, "max_overflow": settings.db_max_overflow})
+        if settings.serverless:
+            # Serverless instances come and go (and get frozen mid-flight):
+            # keep a handful of sockets per instance instead of dozens, and
+            # recycle aggressively so thawed instances never reuse dead TCP.
+            kwargs.update(
+                {
+                    "pool_size": min(settings.db_pool_size, 5),
+                    "max_overflow": min(settings.db_max_overflow, 5),
+                    "pool_timeout": 10,
+                    "pool_recycle": 300,
+                }
+            )
+        else:
+            kwargs.update({"pool_size": settings.db_pool_size, "max_overflow": settings.db_max_overflow})
         if _PG_CONNECT_ARGS:
             kwargs["connect_args"] = dict(_PG_CONNECT_ARGS)
     return kwargs
@@ -120,10 +135,104 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
+def _endpoint_facts() -> dict[str, Any]:
+    """Safe connection diagnostics — endpoint *type*, domain suffix and port.
+
+    Deliberately excludes credentials and the full URL: for
+    ``ep-bold-star-b4bg51sx-pooler.c-6.us-east-2.aws.neon.tech`` this yields
+    ``{endpoint: neon-pooled, host_tail: c-6.us-east-2.aws.neon.tech, port: 5432}``
+    — enough to spot a wrong/pasted-with-quotes host without leaking anything.
+    """
+    try:
+        url = make_url(settings.database_url)
+    except Exception:  # noqa: BLE001 - diagnostics must never crash boot
+        return {"endpoint": "unparsable", "host_tail": None, "port": None}
+    host = url.host or ""
+    labels = host.split(".")
+    host_tail = ".".join(labels[1:]) if len(labels) >= 4 else host
+    if ".neon.tech" in host:
+        endpoint = "neon-pooled" if "-pooler." in host else "neon-direct"
+    elif host:
+        endpoint = "other"
+    else:
+        endpoint = "unknown"
+    return {"endpoint": endpoint, "host_tail": host_tail, "port": url.port}
+
+
+#: Socket errors worth one or two quiet retries. On AWS Lambda the network
+#: layer maps several transient/unreachable-socket conditions onto EBUSY
+#: (see projectdiscovery/httpx#2273), so a bounded retry with backoff is
+#: cheap insurance; persistent failures surface immediately.
+_TRANSIENT_ERRNOS = frozenset(
+    filter(None, (
+        getattr(_errno, "EBUSY", 16),
+        getattr(_errno, "EAGAIN", 11),
+        getattr(_errno, "ECONNRESET", 104),
+        getattr(_errno, "ETIMEDOUT", 110),
+    ))
+)
+
+
+def _transient_errno(exc: BaseException) -> int | None:
+    """Walk the exception chain (SQLAlchemy wraps the driver's OSError)."""
+    seen: set[int] = set()
+    stack = [exc]
+    while stack:
+        cur = stack.pop()
+        if cur is None or id(cur) in seen:
+            continue
+        seen.add(id(cur))
+        if isinstance(cur, OSError) and cur.errno in _TRANSIENT_ERRNOS:
+            return cur.errno
+        stack.extend((getattr(cur, "orig", None), cur.__cause__, cur.__context__))
+    return None
+
+
+async def _attempt(
+    op: str,
+    factory: Any,
+    *,
+    attempts: int = 3,
+    base_delay: float = 0.5,
+    _sleep: Any = asyncio.sleep,
+) -> None:
+    """Bounded retry for transient socket errors only.
+
+    Non-transient errors (auth, permissions, DNS on a normal host, schema)
+    are raised on the first occurrence — retries never hide them, and the
+    whole sequence adds at most ~1.5s to a failing boot.
+    """
+    for attempt in range(1, attempts + 1):
+        try:
+            await factory()
+            return
+        except Exception as exc:  # noqa: BLE001 - classify, then re-raise
+            transient = _transient_errno(exc)
+            if transient is None or attempt == attempts:
+                raise
+            delay = base_delay * attempt
+            log.warning(
+                "db_transient_retry", op=op, attempt=attempt,
+                errno=transient, retry_in_s=delay, **_endpoint_facts(),
+            )
+            await _sleep(delay)
+
+
 async def init_db(*, create_extensions: bool = True) -> None:
     """Create all tables. Alembic owns migrations in production; this is the
     zero-friction path for dev/tests and first boot."""
     from realign import models  # noqa: F401  (register every mapper)
+
+    log.info("db_endpoint", stage="database_init", **_endpoint_facts())
+
+    async def _create_extension() -> None:
+        async with engine.begin() as ext_conn:
+            await ext_conn.execute(text('CREATE EXTENSION IF NOT EXISTS "pgcrypto"'))
+
+    async def _create_schema() -> None:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(_add_missing_columns)
 
     # Optional extension, isolated in its own transaction on purpose: on
     # managed Postgres (Neon) a non-superuser role can hit "permission
@@ -134,14 +243,11 @@ async def init_db(*, create_extensions: bool = True) -> None:
     # connection failures surface again — loudly — in create_all below.
     if not settings.is_sqlite and create_extensions:
         try:
-            async with engine.begin() as ext_conn:
-                await ext_conn.execute(text('CREATE EXTENSION IF NOT EXISTS "pgcrypto"'))
+            await _attempt("create_extension", _create_extension)
         except Exception as exc:  # noqa: BLE001 - optional; never block boot
             log.warning("pgcrypto_extension_skipped", error_class=type(exc).__name__)
 
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-        await conn.run_sync(_add_missing_columns)
+    await _attempt("create_schema", _create_schema)
     log.info("database_ready", url=settings.database_url.split("://")[0])
 
 
