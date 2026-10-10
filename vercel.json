@@ -14,9 +14,6 @@
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index" }
   ],
-  "crons": [
-    { "path": "/api/v1/cron/tick", "schedule": "*/10 * * * *" }
-  ],
   "headers": [
     {
       "source": "/static/(.*)",
