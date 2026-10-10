@@ -16,7 +16,7 @@ sqlalchemy[asyncio]==2.1.4
 greenlet==3.5.6
 alembic==1.17.0
 aiosqlite==0.21.0
-asyncpg==0.31.0
+asyncpg==0.32.0
 
 # --- Config / validation ---------------------------------------------------
 pydantic==2.12.4
