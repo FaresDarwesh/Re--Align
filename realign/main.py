@@ -75,7 +75,23 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     from realign.services.onboarding import seed_plans
 
-    await init_db()
+    try:
+        await init_db()
+    except Exception as exc:  # noqa: BLE001 - translate cryptic DB errors
+        msg = str(exc)
+        if "password authentication failed" in msg:
+            log.error(
+                "db_auth_failed",
+                hint="كلمة السر في DATABASE_URL مش صحيحة. انسخ الـ connection "
+                     "string من Neon من جديد (سطر واحد كامل)، ولو كلمة السر "
+                     "فيها رموز خاصة (# @ % + /) لازم تكون percent-encoded — "
+                     "أسهل حل: من Neon دوس reset للباسورد وخذ سترينج جديد.",
+            )
+        elif "ssl" in msg.lower() or "certificate" in msg.lower():
+            log.error("db_tls_problem", hint="تحقق إن الـ URL فيه sslmode=require")
+        elif "Connection refused" in msg or "name or service not known" in msg:
+            log.error("db_unreachable", hint="راجع الهوست والبورت في DATABASE_URL")
+        raise
     from realign.db import SessionLocal
 
     async with SessionLocal() as session:

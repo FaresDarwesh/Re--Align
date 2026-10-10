@@ -133,10 +133,33 @@ LLM_PROVIDER=mock
 |---|---|
 | البناء بيقول preflight failed + اسم متغير | متغير ناقص في Variables — ضيفه وهييعيد تلقائي |
 | `TypeError: connect() got an unexpected keyword argument 'sslmode'` | اتصلح في الكود نفسه: `realign/db.py` بيشيل `sslmode` و`channel_binding` من الـ URL وبيحوّلهم لـ `ssl.SSLContext` حقيقي قبل ما يوصلوا لـ asyncpg. سيب الـ DATABASE_URL بتاع Neon زي ما هو (`?sslmode=require`) — الكود بيتصرف. لو لسه شايف الخطأ، معناه إن Railway بيبني نسخة قديمة: اعمل Redeploy بعد الـ Push الجديد |
+| `password authentication failed for user 'neondb_owner'` | كلمة السر جوّه DATABASE_URL مش صح — روح فقرة «لو الباسورد فيه رموز خاصة» تحت |
 | `connection refused` لقاعدة البيانات | اتأكد إن الـ DATABASE_URL منسوخ **كامل** بـ `?sslmode=require` |
 | الصفحة بتلف redirect loop | `TRUST_PROXY=true` ناقصة |
 | الـ healthcheck فشل أول مرة | شوف Logs — غالباً أول build بيخلص قبل ما المتغيرات تتحط؛ اعمل **Redeploy** يدوي بعد ما تحطها |
 | الملفات المرفوعة (صور البراند) بتختفي بعد نشر جديد | ديسك Railway مؤقت — مقبول في الانطلاق؛ التخزين الدائم (S3/Cloudinary) خطوة لاحقة اختيارية |
+
+## ٩٫٥. لو الباسورد فيه رموز خاصة (مشكلة «password authentication failed»)
+
+أكتر سبب شائع للرسالة دي: كلمة سر Neon فيها رموز زي `#` أو `@` أو `%` أو `+`
+أو `/`، والـ string اتقصّ عند الرمز ده فاتغيرت كلمة السر اللي بتوصل لقاعدة
+البيانات. الحل بالترتيب:
+
+1. افتح Neon → مشروعك → **Connect**.
+2. جنب كلمة السر في دوس **reset/regenerate** — هتطلع كلمة سر جديدة،
+   والـ connection string اللي بيتعرض بيكون **مشفّر صح (percent-encoded)**
+   وجاهز للنسخ.
+3. انسخ الـ **Connection string كامل في سطر واحد** (بيبدأ بـ
+   `postgres://neondb_owner:` وبيخلص بـ `?sslmode=require`).
+4. في Railway → Variables: **امسح** قيمة `DATABASE_URL` القديمة والصق
+   الجديدة كقيمة واحدة (متستخدمش Raw editor لو هتلصق جوّه أسطر تانية).
+5. Railway هيعيد النشر — لوLogs لازم تبقى شايف `database_ready` بدل الـ traceback.
+
+لو عايز تتأكد يدوياً إن كلمة سرك متشفرة صح، شغّل ده على جهازك:
+```bash
+python -c "import urllib.parse; print(urllib.parse.quote('كلمة_السر_هنا', safe=''))"
+```
+وحط الناتج مكان كلمة السر جوّه الـ URL.
 
 ## ١٠. إمتى تضيف الحاجات التجارية (اختياري، بعد الانطلاق)
 
