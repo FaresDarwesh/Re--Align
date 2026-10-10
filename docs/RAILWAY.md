@@ -155,11 +155,27 @@ LLM_PROVIDER=mock
    الجديدة كقيمة واحدة (متستخدمش Raw editor لو هتلصق جوّه أسطر تانية).
 5. Railway هيعيد النشر — لوLogs لازم تبقى شايف `database_ready` بدل الـ traceback.
 
-لو عايز تتأكد يدوياً إن كلمة سرك متشفرة صح، شغّل ده على جهازك:
+### والطريقة الأضمن (الموصى بيها): ٤ متغيرات منفصلة بدل الـ string
+
+الكود دلوقتي بيعرف يركّب الـ URL لوحده بتشفير صحيح — فالرموز الخاصة مش
+هتقدر تكسره تاني. في Railway → Variables:
+
+1. **امسح** متغير `DATABASE_URL` خالص.
+2. ضيف الأربع دول (قيمهم بتتقصّ من الـ connection string بتاع Neon بالترتيب ده):
+   ```
+   postgres://neondb_owner:‹الباسورد›@ep-xxxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require
+               ├── PGUSER ──┘    └─ PGPASSWORD ┘        └──────── PGHOST ────────┘ └PGDATABASE┘
+   ```
+   - `PGHOST` = `ep-xxxxx.eu-central-1.aws.neon.tech`
+   - `PGUSER` = `neondb_owner`
+   - `PGPASSWORD` = الجزء اللي بين `:` و `@` — الصقه **زي ما ظاهر** حتى لو فيه `%40` ورموز، الكود بيفكّه ويعيد تشفيره صح.
+   - `PGDATABASE` = `neondb`
+3. Railway هيعيد النشر → اللوجز لازم تقول `database_ready`.
+
+ولو عايز تتأكد يدوياً إن كلمة سرك متشفرة صح، شغّل ده على جهازك:
 ```bash
 python -c "import urllib.parse; print(urllib.parse.quote('كلمة_السر_هنا', safe=''))"
 ```
-وحط الناتج مكان كلمة السر جوّه الـ URL.
 
 ## ١٠. إمتى تضيف الحاجات التجارية (اختياري، بعد الانطلاق)
 

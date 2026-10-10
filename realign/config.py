@@ -8,6 +8,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
+from urllib.parse import quote, unquote
+
 import pydantic
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -65,6 +67,15 @@ class Settings(BaseSettings):
     serverless: bool = False
     cron_secret: str = ""
     cron_batch_size: int = 10
+
+    # Fool-proof alternative to DATABASE_URL: set the four components as
+    # separate env vars and the URL is composed here, with the password
+    # percent-encoded correctly - special characters cannot break it.
+    pghost: str = ""
+    pgport: int = 5432
+    pguser: str = ""
+    pgpassword: str = ""
+    pgdatabase: str = "neondb"
     sql_echo: bool = False
     db_pool_size: int = 10
     db_max_overflow: int = 20
@@ -216,6 +227,30 @@ class Settings(BaseSettings):
     cookie_consent_required: bool = True
     security_report_email: str = "security@yourdomain.com"
     expose_docs: bool = False          # /docs hidden unless explicitly enabled
+
+    @pydantic.model_validator(mode="after")
+    def _detect_serverless(self) -> "Settings":
+        """Vercel sets VERCEL=1; honour it unless explicitly overridden."""
+        if "serverless" not in self.model_fields_set:
+            if str(os.getenv("VERCEL", "")).strip().lower() in {"1", "true"}:
+                self.serverless = True
+        return self
+
+    @pydantic.model_validator(mode="after")
+    def _compose_pg_url(self) -> "Settings":
+        if not (self.pghost or "").strip():
+            return self
+        user = quote((self.pguser or "neondb_owner").strip(), safe="")
+        # Tolerate a password pasted straight out of a connection string
+        # (percent-encoded) as well as a raw one: normalise then encode.
+        raw = unquote(self.pgpassword or "")
+        pwd = quote(raw, safe="")
+        self.database_url = (
+            f"postgresql+asyncpg://{user}:{pwd}"
+            f"@{self.pghost.strip()}:{self.pgport}/{self.pgdatabase.strip()}"
+            "?sslmode=require"
+        )
+        return self
 
     # ---------------------------------------------------------- validators -
     @pydantic.field_validator("database_url", mode="before")

@@ -37,3 +37,6 @@ media/
 .DS_Store
 Thumbs.db
 
+
+# ---- Vercel ----
+.vercel

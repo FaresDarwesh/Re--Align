@@ -117,11 +117,15 @@ make admin        # إنشاء مدير
 - **نسيت كلمة المرور**: صفحتين (`/forgot-password` و `/reset-password`)
   بتوكن لمرة واحدة صالح ٣٠ دقيقة، متخزّن مشفّر (hash)، والصفحة بترد نفس الرد
   للإيميل المعروف والغريب (مفيش تسريب لحسابات العملاء).
-- **النشر على Railway**: `Dockerfile` + `railway.toml` جاهزين — Railway يبني
-  الصورة ويشغّلها، وPostgres من Neon، وأول تشغيل بينشئ حساب المالك أوتوماتيك
-  (bootstrap admin). الخطوات كلها بالدقيقة في `docs/RAILWAY.md`، ورفع الكود
-  بـ GitHub Desktop في `PUSH_TO_GITHUB.md`. ولو حبيت تستضيف على سيرفرك:
-  `docker-compose.yml` + `deploy/nginx.conf` + `deploy/re-align.service`.
+- **النشر على Vercel أو Railway** (نفس الريبو يشغّل الاتنين):
+  - Vercel: `api/index.py` + `vercel.json` + `runtime.txt` — الكود بيكتشف
+    `VERCEL=1` لوحده ويقلب وضع serverless (تشغيل inline + bootstrap admin +
+    cron endpoint). الدليل: `docs/VERCEL.md`.
+  - Railway: `Dockerfile` + `railway.toml` + دليل `docs/RAILWAY.md`.
+  - سيرفرك الخاص: `docker-compose.yml` + `deploy/nginx.conf` +
+    `deploy/re-align.service`.
+  - قاعدة البيانات في كل الطرق: Neon (Postgres) — بدعم `DATABASE_URL` أو
+    الأربع متغيرات `PGHOST/PGUSER/PGPASSWORD/PGDATABASE`.
 
 ---
 

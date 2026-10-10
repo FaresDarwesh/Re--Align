@@ -82,10 +82,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         if "password authentication failed" in msg:
             log.error(
                 "db_auth_failed",
-                hint="كلمة السر في DATABASE_URL مش صحيحة. انسخ الـ connection "
-                     "string من Neon من جديد (سطر واحد كامل)، ولو كلمة السر "
-                     "فيها رموز خاصة (# @ % + /) لازم تكون percent-encoded — "
-                     "أسهل حل: من Neon دوس reset للباسورد وخذ سترينج جديد.",
+                hint="كلمة السر في DATABASE_URL مش صحيحة (غالباً رمز خاص قصّ "
+                     "السترينج). الحل المضمون: امسح DATABASE_URL وحط بدلها "
+                     "PGHOST وPGUSER وPGPASSWORD وPGDATABASE كمتغيرات منفصلة "
+                     "— الكود بيركّب الـ URL بنفسه بتشفير صح. التفاصيل في "
+                     "docs/RAILWAY.md فقرة ٩٫٥.",
             )
         elif "ssl" in msg.lower() or "certificate" in msg.lower():
             log.error("db_tls_problem", hint="تحقق إن الـ URL فيه sslmode=require")
