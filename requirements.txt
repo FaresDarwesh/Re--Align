@@ -33,7 +33,7 @@ httpx==0.28.1
 
 # --- Scheduling / background work -----------------------------------------
 apscheduler==3.11.2
-croniter==6.0.0
+croniter==6.2.4
 
 # --- Observability ---------------------------------------------------------
 structlog==25.5.0
