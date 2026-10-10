@@ -23,8 +23,8 @@ if [ -d backups ]; then
 fi
 
 # 3) الكود: لا كتابة للمجموعة أو للجميع
-find app scripts alembic tests -type f -name '*.py' -exec chmod 640 {} \; 2>/dev/null
-find app scripts alembic tests -type d -exec chmod 750 {} \; 2>/dev/null
+find app scripts db_migrations tests -type f -name '*.py' -exec chmod 640 {} \; 2>/dev/null
+find app scripts db_migrations tests -type d -exec chmod 750 {} \; 2>/dev/null
 echo "  + كود التطبيق -> 640/750"
 
 # 4) السكربتات التنفيذية

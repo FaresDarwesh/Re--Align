@@ -304,7 +304,7 @@ realign/
 ├── requirements.txt              ← محدّث
 ├── pytest.ini · Makefile         ← جديد
 ├── Dockerfile · docker-compose.yml · .dockerignore · .gitignore   ← جديد
-├── alembic.ini + alembic/env.py + alembic/versions/9f9aece67ad4 (559 سطر)  ← جديد
+├── alembic.ini + db_migrations/env.py + db_migrations/versions/9f9aece67ad4 (559 سطر)  ← جديد
 ├── deploy/realign.service · deploy/nginx.conf          ← جديد
 ├── scripts/{create_admin,generate_keys,backup.sh,run_prod.sh}.py ← جديد
 ├── tests/conftest.py · tests/test_platform.py (17 اختبار)         ← جديد
