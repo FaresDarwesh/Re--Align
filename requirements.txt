@@ -43,6 +43,6 @@ pip-audit==2.10.1          # فحص ثغرات الحزم: pip-audit -r requirem
 
 # --- Testing ---------------------------------------------------------------
 pytest==9.1.1
-pytest-asyncio==1.3.0
+pytest-asyncio==1.4.0
 anyio==4.15.1
 gunicorn==26.2.0
