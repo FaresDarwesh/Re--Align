@@ -8,3 +8,5 @@ healthcheckPath = "/api/v1/health"
 healthcheckTimeout = 60
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
+[tool.vercel]
+entrypoint = "realign.main:app"
